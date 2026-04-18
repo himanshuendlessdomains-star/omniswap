@@ -1,20 +1,14 @@
 'use client';
 
-import { PrivyProvider } from '@privy-io/react-auth';
+import { TonConnectUIProvider } from '@tonconnect/ui-react';
+
+const MANIFEST_URL = 'https://purifier-astound-gruffly.ngrok-free.app/tonconnect-manifest.json';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <PrivyProvider
-      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? ''}
-      config={{
-        loginMethods: ['telegram', 'email', 'google'],
-        appearance: {
-          theme: 'dark',
-          accentColor: '#39E75F',
-        },
-      }}
-    >
+    // @ts-ignore — analytics is an internal option not in public types
+    <TonConnectUIProvider manifestUrl={MANIFEST_URL} analytics={{ mode: 'off' }}>
       {children}
-    </PrivyProvider>
+    </TonConnectUIProvider>
   );
 }

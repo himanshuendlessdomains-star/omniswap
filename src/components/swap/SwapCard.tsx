@@ -1,13 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useSignRawHash } from '@privy-io/react-auth/extended-chains';
-import { useTonAuth } from '@/hooks/useTonAuth';
+import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import type { Token, BestQuote, TradePhase } from '@/types';
 import { NATIVE_TON, TON_TOKENS, parseUnits, formatUnits } from '@/lib/tokens';
 import { requestQuote, normalizeQuote, buildTransfer } from '@/lib/omniston';
 import { getOmniston, makeAddress } from '@/lib/omniston';
-import { buildAndSendTonTransaction } from '@/lib/privy-ton';
 import TokenSelector from './TokenSelector';
 import QuoteDisplay from './QuoteDisplay';
 import RouteVisualizer from './RouteVisualizer';
@@ -17,8 +15,8 @@ import Button from '@/components/ui/Button';
 const DEFAULT_SLIPPAGE = 100; // 1%
 
 export default function SwapCard() {
-  const { signRawHash } = useSignRawHash();
-  const { wallet, isConnected, connect } = useTonAuth();
+  const [tonConnectUI] = useTonConnectUI();
+  const wallet = useTonWallet();
 
   const [tokenIn, setTokenIn] = useState<Token>(NATIVE_TON);
   const [tokenOut, setTokenOut] = useState<Token>(TON_TOKENS[1]);
@@ -111,31 +109,30 @@ export default function SwapCard() {
     try {
       const txPayload = await buildTransfer(
         rawQuoteRef.current,
-        wallet.address,
+        wallet.account.address,
         true,
       );
 
       const messages = txPayload?.ton?.messages ?? [];
       if (!messages.length) throw new Error('No transaction messages returned');
 
-      const outHash = await buildAndSendTonTransaction(
-        wallet.address,
-        wallet.publicKey,
-        messages.map((m: any) => ({
+      const result = await tonConnectUI.sendTransaction({
+        validUntil: Math.floor(Date.now() / 1000) + 360,
+        messages: messages.map((m: any) => ({
           address: m.targetAddress ?? m.target_address,
           amount: m.sendAmount ?? m.send_amount,
           payload: m.payload,
         })),
-        signRawHash
-      );
+      });
 
+      const outHash = result?.boc ?? '';
       setTxHash(outHash);
       setPhase('transferring');
 
       const omniston = getOmniston();
       const trackSub = omniston.trackTrade({
         quoteId: quote.quoteId,
-        traderWalletAddress: makeAddress(wallet.address),
+        traderWalletAddress: makeAddress(wallet.account.address),
         outgoingTxHash: outHash,
       }).subscribe({
         next: (status: any) => {
@@ -158,7 +155,7 @@ export default function SwapCard() {
     }
   }
 
-  const canSwap = isConnected && !!quote && !!amountIn && Number(amountIn) > 0 && !swapping;
+  const canSwap = !!wallet && !!quote && !!amountIn && Number(amountIn) > 0 && !swapping;
 
   return (
     <div className="w-100 max-w-md mx-auto">
@@ -250,24 +247,14 @@ export default function SwapCard() {
 
         {/* Swap button */}
         <Button
-          variant={isConnected ? 'primary' : 'secondary'}
+          variant={wallet ? 'primary' : 'secondary'}
           size="lg"
           className="w-100 mt-1"
           loading={swapping}
-          disabled={isConnected ? !canSwap : false}
-          onClick={isConnected ? handleSwap : connect}
+          disabled={wallet ? !canSwap : false}
+          onClick={wallet ? handleSwap : () => tonConnectUI.openModal()}
         >
-          {!isConnected
-            ? 'Connect Wallet'
-            : swapping
-            ? 'Swapping…'
-            : quoting
-            ? 'Getting best rate…'
-            : !amountIn
-            ? 'Enter amount'
-            : !quote
-            ? 'No quote'
-            : 'Swap'}
+          {!wallet ? 'Connect Wallet' : swapping ? 'Swapping…' : quoting ? 'Getting best rate…' : !amountIn ? 'Enter amount' : !quote ? 'No quote' : 'Swap'}
         </Button>
       </div>
 

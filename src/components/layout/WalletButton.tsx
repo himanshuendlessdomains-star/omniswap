@@ -1,55 +1,39 @@
 'use client';
 
-import { usePrivy } from '@privy-io/react-auth';
-import { useCreateWallet } from '@privy-io/react-auth/extended-chains';
-import { useTonWalletPrivy } from '@/hooks/useTonWalletPrivy';
-import { shortenAddress } from '@/lib/tonconnect';
+import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import Button from '@/components/ui/Button';
+import { shortenAddress } from '@/lib/tonconnect';
 
 export default function WalletButton() {
-  const { ready, authenticated, login, logout } = usePrivy();
-  const { createWallet } = useCreateWallet();
-  const tonWallet = useTonWalletPrivy();
+  const [tonConnectUI] = useTonConnectUI();
+  const wallet = useTonWallet();
 
-  if (!ready) return null;
-
-  if (!authenticated) {
+  if (wallet) {
+    const addr = wallet.account.address;
     return (
-      <Button variant="primary" size="sm" onClick={login}>
-        Connect Wallet
-      </Button>
-    );
-  }
-
-  if (!tonWallet) {
-    return (
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={() => createWallet({ chainType: 'ton' })}
+      <button
+        onClick={() => tonConnectUI.disconnect()}
+        className="d-flex align-items-center gap-2 px-3 py-2 border fw-medium text-sm transition-colors"
+        style={{
+          background: 'var(--accent-green-dim)',
+          borderColor: 'rgba(57,231,95,0.3)',
+          color: 'var(--accent-green)',
+          borderRadius: '14px',
+        }}
       >
-        Create TON Wallet
-      </Button>
+        <span className="dot-md rounded-circle" style={{ background: 'var(--accent-green)' }} />
+        {shortenAddress(addr)}
+      </button>
     );
   }
 
   return (
-    <button
-      onClick={logout}
-      className="d-flex align-items-center gap-2 px-3 py-2 border fw-medium text-sm transition-colors"
-      style={{
-        background: 'var(--accent-green-dim)',
-        borderColor: 'rgba(57,231,95,0.3)',
-        color: 'var(--accent-green)',
-        borderRadius: '14px',
-        cursor: 'pointer',
-      }}
+    <Button
+      variant="primary"
+      size="sm"
+      onClick={() => tonConnectUI.openModal()}
     >
-      <span
-        className="dot-md rounded-circle"
-        style={{ background: 'var(--accent-green)' }}
-      />
-      {shortenAddress(tonWallet.address)}
-    </button>
+      Connect Wallet
+    </Button>
   );
 }
