@@ -1,0 +1,34 @@
+// Design tokens — dark green crypto theme
+:root {
+  --bg-primary: #070c07;
+  --bg-secondary: #0c140c;
+  --bg-card: #111a11;
+  --bg-card-2: #162016;
+  --bg-card-hover: #1a271a;
+  --bg-input: #0e160e;
+
+  --accent-green: #39e75f;
+  --accent-green-dim: rgba(57, 231, 95, 0.15);
+  --accent-green-glow: rgba(57, 231, 95, 0.25);
+  --accent-yellow: #e8d44d;
+  --accent-yellow-dim: rgba(232, 212, 77, 0.15);
+
+  --text: #e2f0e2;
+  --text-muted: #7a9e7a;
+  --text-dim: #3f5c3f;
+
+  --border: rgba(57, 231, 95, 0.08);
+  --border-2: rgba(57, 231, 95, 0.18);
+  --border-hover: rgba(57, 231, 95, 0.35);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 32px rgba(57, 231, 95, 0.12);
+}
+
+// Instrument Sans from Google Fonts (loaded in layout)
+$font-primary: 'Instrument Sans', sans-serif;

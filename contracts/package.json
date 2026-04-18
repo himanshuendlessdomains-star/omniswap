@@ -1,0 +1,21 @@
+{
+  "name": "omniswap-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npx blueprint build",
+    "test":  "npx blueprint test",
+    "deploy": "npx ts-node scripts/deploy.ts"
+  },
+  "dependencies": {
+    "@ton/ton":    "^13.9.0",
+    "@ton/crypto": "^3.2.0",
+    "@ton/core":   "^0.57.1"
+  },
+  "devDependencies": {
+    "@ton-community/blueprint": "^0.18.0",
+    "ts-node":    "^10.9.2",
+    "typescript": "^5.4.5",
+    "dotenv":     "^16.4.5"
+  }
+}

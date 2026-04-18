@@ -1,0 +1,204 @@
+@use './variables' as *;
+
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wdth,wght@0,75..100,400..700;1,75..100,400..700&display=swap');
+
+// Override Bootstrap CSS variables with our dark green theme
+:root {
+  --bs-border-color: var(--border);
+  --bs-border-color-translucent: var(--border);
+  --bs-body-bg: var(--bg-primary);
+  --bs-body-color: var(--text);
+  --bs-font-sans-serif: 'Instrument Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: $font-primary;
+  background: var(--bg-primary);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(57, 231, 95, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 80% 80%, rgba(232, 212, 77, 0.03) 0%, transparent 50%);
+}
+
+// ─── Layout utilities ─────────────────────────────────────────────────────────
+.min-h-screen-nav { min-height: calc(100vh - 64px); }
+.max-w-sm         { max-width: 24rem; }
+.max-w-md         { max-width: 28rem; }
+.max-w-2xl        { max-width: 42rem; }
+.max-w-3xl        { max-width: 48rem; }
+.max-w-5xl        { max-width: 64rem; }
+.h-16             { height: 4rem; }
+.h-px             { height: 1px; }
+.max-h-72         { max-height: 18rem; }
+.py-section       { padding-top: 4rem; padding-bottom: 4rem; }
+
+// ─── Icon / dot sizes ─────────────────────────────────────────────────────────
+.icon-sm  { width: 1rem;    height: 1rem;    display: inline-flex; align-items: center; justify-content: center; }
+.icon-md  { width: 1.5rem;  height: 1.5rem;  display: inline-flex; align-items: center; justify-content: center; }
+.icon-lg  { width: 2rem;    height: 2rem;    display: inline-flex; align-items: center; justify-content: center; }
+.icon-xl  { width: 2.25rem; height: 2.25rem; display: inline-flex; align-items: center; justify-content: center; }
+.dot-sm   { width: 0.375rem; height: 0.375rem; flex-shrink: 0; }
+.dot-md   { width: 0.5rem;   height: 0.5rem;   flex-shrink: 0; }
+
+// ─── Typography ───────────────────────────────────────────────────────────────
+.text-xs      { font-size: 0.75rem !important; }
+.text-sm      { font-size: 0.875rem !important; }
+.text-lg      { font-size: 1.125rem !important; }
+.text-xl      { font-size: 1.25rem !important; }
+.text-4xl     { font-size: 2.25rem !important; }
+.text-5xl     { font-size: 3rem !important; }
+.tracking-tight { letter-spacing: -0.025em; }
+.leading-tight  { line-height: 1.25; }
+
+// Responsive font for hero heading
+@media (min-width: 768px) {
+  .md\:text-5xl { font-size: 3rem !important; }
+}
+
+// ─── Spacing extras ───────────────────────────────────────────────────────────
+.gap-1-5 { gap: 0.375rem; }
+.gap-2-5 { gap: 0.625rem; }
+.gap-6   { gap: 1.5rem; }
+.gap-10  { gap: 2.5rem; }
+
+// ─── Interaction ──────────────────────────────────────────────────────────────
+.transition-colors { transition: color .15s ease, background-color .15s ease, border-color .15s ease; }
+.transition-all    { transition: all .15s ease; }
+.outline-none      { outline: none !important; }
+.cursor-default    { cursor: default; }
+.object-cover      { object-fit: cover; }
+
+.active-scale-90:active  { transform: scale(0.9); }
+.active-scale-98:active  { transform: scale(0.98); }
+
+button:disabled,
+button[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+// ─── Button variants ──────────────────────────────────────────────────────────
+.btn-primary-custom {
+  background: var(--accent-green);
+  color: #030803;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  &:hover:not(:disabled) { filter: brightness(1.1); }
+  &:active:not(:disabled) { transform: scale(0.98); }
+}
+.btn-secondary-custom {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border-2);
+  color: var(--text);
+  cursor: pointer;
+  &:hover:not(:disabled) { border-color: var(--border-hover); }
+}
+.btn-yellow-custom {
+  background: var(--accent-yellow);
+  color: #1a1500;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  &:hover:not(:disabled) { filter: brightness(1.1); }
+  &:active:not(:disabled) { transform: scale(0.98); }
+}
+.btn-ghost-custom {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  &:hover:not(:disabled) { color: var(--text); background: var(--bg-card-2); }
+}
+
+.btn-custom-sm { padding: 0.375rem 0.75rem;  font-size: 0.875rem; border-radius: 10px; }
+.btn-custom-md { padding: 0.625rem 1.25rem;  font-size: 0.875rem; border-radius: 14px; }
+.btn-custom-lg { padding: 0.875rem 1.5rem;   font-size: 1rem;     border-radius: 16px; }
+
+// ─── Glass card ───────────────────────────────────────────────────────────────
+.glass {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+}
+
+.glass-hover {
+  @extend .glass;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  &:hover {
+    border-color: var(--border-2);
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow-card), var(--shadow-glow);
+  }
+}
+
+// ─── Neon glow text ───────────────────────────────────────────────────────────
+.text-glow {
+  color: var(--accent-green);
+  text-shadow: 0 0 20px rgba(57, 231, 95, 0.5);
+}
+
+// ─── Badge variants ───────────────────────────────────────────────────────────
+.badge-green {
+  background: var(--accent-green-dim);
+  color: var(--accent-green);
+  border: 1px solid rgba(57, 231, 95, 0.2);
+}
+.badge-yellow {
+  background: var(--accent-yellow-dim);
+  color: var(--accent-yellow);
+  border: 1px solid rgba(232, 212, 77, 0.2);
+}
+.badge-muted {
+  background: rgba(122, 158, 122, 0.08);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+// ─── Protocol pills ───────────────────────────────────────────────────────────
+.protocol-stonfi { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+.protocol-dedust { background: rgba(234, 179, 8, 0.15);  color: #ca8a04; }
+.protocol-tonco  { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+
+// ─── Scrollbar ────────────────────────────────────────────────────────────────
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
+
+// ─── Number input: hide arrows ────────────────────────────────────────────────
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+input[type=number] { -moz-appearance: textfield; }
+
+// ─── Animations ───────────────────────────────────────────────────────────────
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(57, 231, 95, 0.3); }
+  50%       { box-shadow: 0 0 0 8px rgba(57, 231, 95, 0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .5; }
+}
+
+.animate-slide-up    { animation: slide-up 0.3s ease forwards; }
+.animate-fade-in     { animation: fade-in 0.2s ease forwards; }
+.animate-spin        { animation: spin 1s linear infinite; }
+.animate-pulse-green { animation: pulse-green 2s ease-in-out infinite; }
+.animate-pulse       { animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite; }
