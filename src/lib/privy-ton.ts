@@ -15,32 +15,16 @@ export interface TonMessage {
 
 export async function buildAndSendTonTransaction(
   walletAddress: string,
-  walletId: string,
+  publicKey: string,
   messages: TonMessage[],
-  opts: {
-    getAccessToken: () => Promise<string | null>;
-    signRawHash: (params: {
-      address: string;
-      chainType: 'ton';
-      hash: `0x${string}`;
-    }) => Promise<{ signature: `0x${string}` }>;
-    privyAppId: string;
-  }
+  signRawHash: (params: {
+    address: string;
+    chainType: 'ton';
+    hash: `0x${string}`;
+  }) => Promise<{ signature: `0x${string}` }>
 ): Promise<string> {
-  const accessToken = await opts.getAccessToken();
-  if (!accessToken) throw new Error('Not authenticated');
-
-  const res = await fetch(`https://auth.privy.io/api/v1/wallets/${walletId}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'privy-app-id': opts.privyAppId,
-    },
-  });
-
-  if (!res.ok) throw new Error('Failed to fetch wallet public key from Privy');
-
-  let publicKeyHex: string = (await res.json()).public_key.replace('0x', '');
-  // Strip Ed25519 ASN.1 prefix if present
+  // Strip 0x and optional Ed25519 ASN.1 prefix
+  let publicKeyHex = publicKey.replace('0x', '');
   if (publicKeyHex.length === 66 && publicKeyHex.startsWith('00')) {
     publicKeyHex = publicKeyHex.slice(2);
   }
@@ -73,7 +57,7 @@ export async function buildAndSendTonTransaction(
     signer: async (msgCell) => {
       const hash = ('0x' +
         Buffer.from(msgCell.hash()).toString('hex')) as `0x${string}`;
-      const { signature } = await opts.signRawHash({
+      const { signature } = await signRawHash({
         address: walletAddress,
         chainType: 'ton',
         hash,

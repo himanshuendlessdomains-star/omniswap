@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
 import { useSignRawHash } from '@privy-io/react-auth/extended-chains';
 import { useTonAuth } from '@/hooks/useTonAuth';
 import type { Token, BestQuote, TradePhase } from '@/types';
@@ -18,7 +17,6 @@ import Button from '@/components/ui/Button';
 const DEFAULT_SLIPPAGE = 100; // 1%
 
 export default function SwapCard() {
-  const { getAccessToken } = usePrivy();
   const { signRawHash } = useSignRawHash();
   const { wallet, isConnected, connect } = useTonAuth();
 
@@ -122,17 +120,13 @@ export default function SwapCard() {
 
       const outHash = await buildAndSendTonTransaction(
         wallet.address,
-        wallet.walletId,
+        wallet.publicKey,
         messages.map((m: any) => ({
           address: m.targetAddress ?? m.target_address,
           amount: m.sendAmount ?? m.send_amount,
           payload: m.payload,
         })),
-        {
-          getAccessToken,
-          signRawHash,
-          privyAppId: process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-        }
+        signRawHash
       );
 
       setTxHash(outHash);
