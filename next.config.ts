@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ['purifier-astound-gruffly.ngrok-free.app'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'ton.org' },

@@ -1,39 +1,55 @@
 'use client';
 
-import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
-import Button from '@/components/ui/Button';
+import { usePrivy } from '@privy-io/react-auth';
+import { useCreateWallet } from '@privy-io/react-auth/extended-chains';
+import { useTonWalletPrivy } from '@/hooks/useTonWalletPrivy';
 import { shortenAddress } from '@/lib/tonconnect';
+import Button from '@/components/ui/Button';
 
 export default function WalletButton() {
-  const [tonConnectUI] = useTonConnectUI();
-  const wallet = useTonWallet();
+  const { ready, authenticated, login, logout } = usePrivy();
+  const { createWallet } = useCreateWallet();
+  const tonWallet = useTonWalletPrivy();
 
-  if (wallet) {
-    const addr = wallet.account.address;
+  if (!ready) return null;
+
+  if (!authenticated) {
     return (
-      <button
-        onClick={() => tonConnectUI.disconnect()}
-        className="d-flex align-items-center gap-2 px-3 py-2 border fw-medium text-sm transition-colors"
-        style={{
-          background: 'var(--accent-green-dim)',
-          borderColor: 'rgba(57,231,95,0.3)',
-          color: 'var(--accent-green)',
-          borderRadius: '14px',
-        }}
+      <Button variant="primary" size="sm" onClick={login}>
+        Connect Wallet
+      </Button>
+    );
+  }
+
+  if (!tonWallet) {
+    return (
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={() => createWallet({ chainType: 'ton' })}
       >
-        <span className="dot-md rounded-circle" style={{ background: 'var(--accent-green)' }} />
-        {shortenAddress(addr)}
-      </button>
+        Create TON Wallet
+      </Button>
     );
   }
 
   return (
-    <Button
-      variant="primary"
-      size="sm"
-      onClick={() => tonConnectUI.openModal()}
+    <button
+      onClick={logout}
+      className="d-flex align-items-center gap-2 px-3 py-2 border fw-medium text-sm transition-colors"
+      style={{
+        background: 'var(--accent-green-dim)',
+        borderColor: 'rgba(57,231,95,0.3)',
+        color: 'var(--accent-green)',
+        borderRadius: '14px',
+        cursor: 'pointer',
+      }}
     >
-      Connect Wallet
-    </Button>
+      <span
+        className="dot-md rounded-circle"
+        style={{ background: 'var(--accent-green)' }}
+      />
+      {shortenAddress(tonWallet.address)}
+    </button>
   );
 }

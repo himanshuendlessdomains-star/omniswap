@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
+import { usePrivy } from '@privy-io/react-auth';
+import { useSignRawHash } from '@privy-io/react-auth/extended-chains';
+import { useTonAuth } from '@/hooks/useTonAuth';
 import type { Token, BestQuote, TradePhase } from '@/types';
 import { NATIVE_TON, TON_TOKENS, parseUnits, formatUnits } from '@/lib/tokens';
 import { requestQuote, normalizeQuote, buildTransfer } from '@/lib/omniston';
 import { getOmniston, makeAddress } from '@/lib/omniston';
+import { buildAndSendTonTransaction } from '@/lib/privy-ton';
 import TokenSelector from './TokenSelector';
 import QuoteDisplay from './QuoteDisplay';
 import RouteVisualizer from './RouteVisualizer';
@@ -15,8 +18,9 @@ import Button from '@/components/ui/Button';
 const DEFAULT_SLIPPAGE = 100; // 1%
 
 export default function SwapCard() {
-  const [tonConnectUI] = useTonConnectUI();
-  const wallet = useTonWallet();
+  const { getAccessToken } = usePrivy();
+  const { signRawHash } = useSignRawHash();
+  const { wallet, isConnected, connect } = useTonAuth();
 
   const [tokenIn, setTokenIn] = useState<Token>(NATIVE_TON);
   const [tokenOut, setTokenOut] = useState<Token>(TON_TOKENS[1]);
@@ -109,30 +113,35 @@ export default function SwapCard() {
     try {
       const txPayload = await buildTransfer(
         rawQuoteRef.current,
-        wallet.account.address,
+        wallet.address,
         true,
       );
 
       const messages = txPayload?.ton?.messages ?? [];
       if (!messages.length) throw new Error('No transaction messages returned');
 
-      const result = await tonConnectUI.sendTransaction({
-        validUntil: Math.floor(Date.now() / 1000) + 360,
-        messages: messages.map((m: any) => ({
+      const outHash = await buildAndSendTonTransaction(
+        wallet.address,
+        wallet.walletId,
+        messages.map((m: any) => ({
           address: m.targetAddress ?? m.target_address,
           amount: m.sendAmount ?? m.send_amount,
           payload: m.payload,
         })),
-      });
+        {
+          getAccessToken,
+          signRawHash,
+          privyAppId: process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
+        }
+      );
 
-      const outHash = result?.boc ?? '';
       setTxHash(outHash);
       setPhase('transferring');
 
       const omniston = getOmniston();
       const trackSub = omniston.trackTrade({
         quoteId: quote.quoteId,
-        traderWalletAddress: makeAddress(wallet.account.address),
+        traderWalletAddress: makeAddress(wallet.address),
         outgoingTxHash: outHash,
       }).subscribe({
         next: (status: any) => {
@@ -155,7 +164,7 @@ export default function SwapCard() {
     }
   }
 
-  const canSwap = !!wallet && !!quote && !!amountIn && Number(amountIn) > 0 && !swapping;
+  const canSwap = isConnected && !!quote && !!amountIn && Number(amountIn) > 0 && !swapping;
 
   return (
     <div className="w-100 max-w-md mx-auto">
@@ -247,14 +256,24 @@ export default function SwapCard() {
 
         {/* Swap button */}
         <Button
-          variant={wallet ? 'primary' : 'secondary'}
+          variant={isConnected ? 'primary' : 'secondary'}
           size="lg"
           className="w-100 mt-1"
           loading={swapping}
-          disabled={wallet ? !canSwap : false}
-          onClick={wallet ? handleSwap : () => tonConnectUI.openModal()}
+          disabled={isConnected ? !canSwap : false}
+          onClick={isConnected ? handleSwap : connect}
         >
-          {!wallet ? 'Connect Wallet' : swapping ? 'Swapping…' : quoting ? 'Getting best rate…' : !amountIn ? 'Enter amount' : !quote ? 'No quote' : 'Swap'}
+          {!isConnected
+            ? 'Connect Wallet'
+            : swapping
+            ? 'Swapping…'
+            : quoting
+            ? 'Getting best rate…'
+            : !amountIn
+            ? 'Enter amount'
+            : !quote
+            ? 'No quote'
+            : 'Swap'}
         </Button>
       </div>
 
