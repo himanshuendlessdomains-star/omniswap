@@ -2,7 +2,7 @@
 
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
 
-const MANIFEST_URL = 'https://purifier-astound-gruffly.ngrok-free.app/tonconnect-manifest.json';
+const MANIFEST_URL = 'https://omniswap-three.vercel.app/tonconnect-manifest.json';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
