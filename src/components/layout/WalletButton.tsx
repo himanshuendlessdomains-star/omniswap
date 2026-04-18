@@ -9,30 +9,25 @@ export default function WalletButton() {
   const wallet = useTonWallet();
 
   if (wallet) {
-    const addr = wallet.account.address;
     return (
       <button
         onClick={() => tonConnectUI.disconnect()}
-        className="d-flex align-items-center gap-2 px-3 py-2 border fw-medium text-sm transition-colors"
+        className="d-flex align-items-center gap-2 px-3 py-2 fw-semibold text-sm transition-all"
         style={{
           background: 'var(--accent-green-dim)',
-          borderColor: 'rgba(57,231,95,0.3)',
+          border: '1px solid var(--border-green)',
           color: 'var(--accent-green)',
-          borderRadius: '14px',
+          borderRadius: '999px',
         }}
       >
         <span className="dot-md rounded-circle" style={{ background: 'var(--accent-green)' }} />
-        {shortenAddress(addr)}
+        {shortenAddress(wallet.account.address)}
       </button>
     );
   }
 
   return (
-    <Button
-      variant="primary"
-      size="sm"
-      onClick={() => tonConnectUI.openModal()}
-    >
+    <Button variant="primary" size="sm" onClick={() => tonConnectUI.openModal()}>
       Connect Wallet
     </Button>
   );

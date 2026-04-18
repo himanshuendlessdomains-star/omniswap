@@ -1,34 +1,46 @@
-// Design tokens — dark green crypto theme
+// Design tokens — matching Omniswap PDF design
 :root {
-  --bg-primary: #070c07;
-  --bg-secondary: #0c140c;
-  --bg-card: #111a11;
-  --bg-card-2: #162016;
-  --bg-card-hover: #1a271a;
-  --bg-input: #0e160e;
+  // Backgrounds — neutral near-black (no colour tint)
+  --bg-primary:    #0c0f11;
+  --bg-secondary:  #111619;
+  --bg-card:       #161c21;
+  --bg-card-2:     #1c2329;
+  --bg-card-hover: #232c34;
+  --bg-input:      #131a20;
+  --bg-section:    #0f1317;
 
-  --accent-green: #39e75f;
-  --accent-green-dim: rgba(57, 231, 95, 0.15);
-  --accent-green-glow: rgba(57, 231, 95, 0.25);
-  --accent-yellow: #e8d44d;
-  --accent-yellow-dim: rgba(232, 212, 77, 0.15);
+  // Accents
+  --accent-lime:        #c8f135;           // primary CTA (PDF lime)
+  --accent-lime-dim:    rgba(200,241,53,0.10);
+  --accent-lime-glow:   rgba(200,241,53,0.20);
+  --accent-green:       #39e75f;           // swap UI success states
+  --accent-green-dim:   rgba(57,231,95,0.12);
+  --accent-green-glow:  rgba(57,231,95,0.18);
+  --accent-yellow:      #e8d44d;
+  --accent-yellow-dim:  rgba(232,212,77,0.12);
 
-  --text: #e2f0e2;
-  --text-muted: #7a9e7a;
-  --text-dim: #3f5c3f;
+  // Text
+  --text:       #e8ecf1;
+  --text-muted: #64748b;
+  --text-dim:   #3d4853;
 
-  --border: rgba(57, 231, 95, 0.08);
-  --border-2: rgba(57, 231, 95, 0.18);
-  --border-hover: rgba(57, 231, 95, 0.35);
+  // Borders
+  --border:        rgba(255,255,255,0.07);
+  --border-2:      rgba(255,255,255,0.11);
+  --border-hover:  rgba(200,241,53,0.40);
+  --border-green:  rgba(57,231,95,0.25);
 
+  // Radii
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-xl: 32px;
 
-  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 32px rgba(57, 231, 95, 0.12);
+  // Shadows
+  --shadow-card:  0 4px 32px rgba(0,0,0,0.55);
+  --shadow-glow:  0 0 40px rgba(57,231,95,0.08);
+  --shadow-lime:  0 0 40px rgba(200,241,53,0.15);
 }
 
-// Instrument Sans from Google Fonts (loaded in layout)
-$font-primary: 'Instrument Sans', sans-serif;
+$font-primary:   'Instrument Sans', sans-serif;
+$font-display:   'Space Grotesk', sans-serif;
