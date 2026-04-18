@@ -7,7 +7,7 @@ import SwapCard from '@/components/swap/SwapCard';
 function SectionLabel({ text }: { text: string }) {
   return (
     <p className="section-label">
-      <span style={{ color: 'var(--text-dim)' }}>—</span> {text}
+      <span style={{ color: 'var(--text-dim)' }}>◆</span> {text}
     </p>
   );
 }
@@ -32,34 +32,45 @@ function Hero() {
   return (
     <section
       style={{
-        background: 'radial-gradient(ellipse 80% 60% at 60% -10%, rgba(57,231,95,0.06) 0%, transparent 60%), var(--bg-primary)',
-        paddingTop: '4rem',
-        paddingBottom: '5rem',
+        background: 'var(--bg-primary)',
+        paddingTop: '4.5rem',
+        paddingBottom: '5.5rem',
       }}
     >
       <div className="max-w-6xl mx-auto px-4">
-        <div className="row align-items-center g-5">
+        <div className="row align-items-center" style={{ gap: '4rem 0' }}>
 
           {/* Left — copy */}
           <div className="col-12 col-lg-5">
-            {/* Live badge */}
+            {/* Badge */}
             <div className="hero-badge mb-4 d-inline-flex">
-              <span className="dot-sm rounded-circle animate-pulse" style={{ background: 'var(--accent-lime)' }} />
+              <span
+                className="rounded-circle animate-pulse-lime-ring flex-shrink-0"
+                style={{ width: '6px', height: '6px', background: 'var(--accent-lime)', display: 'inline-block' }}
+              />
               Live on TON · 4 DEXes
             </div>
 
             {/* Headline */}
             <h1
-              className="font-display fw-bold tracking-tighter leading-tight mb-4"
-              style={{ fontSize: 'clamp(2.6rem, 5vw, 4.25rem)', color: 'var(--text)' }}
+              className="font-display fw-medium leading-tight mb-4"
+              style={{
+                fontSize: 'clamp(2.75rem, 6.2vw, 5.5rem)',
+                color: 'var(--text)',
+                letterSpacing: '-0.035em',
+                lineHeight: 0.98,
+              }}
             >
               Swap anything,{' '}
-              <span style={{ color: 'var(--accent-lime)' }}>anywhere,</span>{' '}
+              <span style={{ color: 'var(--text-muted)' }}>anywhere,</span>{' '}
               in one tap.
             </h1>
 
             {/* Description */}
-            <p className="mb-5" style={{ color: 'var(--text-muted)', fontSize: '1.0625rem', lineHeight: 1.7, maxWidth: '30rem' }}>
+            <p
+              className="mb-5"
+              style={{ color: 'var(--text-muted)', fontSize: '1.0625rem', lineHeight: 1.55, maxWidth: '32rem' }}
+            >
               OmniSwap routes your trade across STON.fi, DeDust, and TONCO
               to guarantee the best price — with MEV protection, sub-10s
               settlement, and a single signature.
@@ -69,16 +80,19 @@ function Hero() {
             <div className="d-flex align-items-center gap-3 flex-wrap mb-5">
               <Link
                 href="/"
-                className="d-inline-flex align-items-center gap-2 fw-bold text-decoration-none btn-custom-lg"
+                className="d-inline-flex align-items-center gap-2 fw-medium text-decoration-none btn-custom-lg"
                 style={{
                   background: 'var(--accent-lime)',
                   color: '#0c0f11',
                   borderRadius: '999px',
                   fontSize: '0.9375rem',
+                  transition: 'filter 160ms ease, transform 160ms ease',
                 }}
+                onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(1.08)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.filter = ''; e.currentTarget.style.transform = ''; }}
               >
                 Launch app
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
                 </svg>
               </Link>
@@ -86,46 +100,76 @@ function Hero() {
                 href="#how-it-works"
                 className="d-inline-flex align-items-center gap-2 fw-medium text-decoration-none btn-custom-lg"
                 style={{
-                  background: 'var(--bg-card)',
+                  background: 'transparent',
                   border: '1px solid var(--border-2)',
                   color: 'var(--text)',
                   borderRadius: '999px',
                   fontSize: '0.9375rem',
+                  transition: 'background 160ms ease',
                 }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-card)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 See how it works
               </Link>
             </div>
 
-            {/* Trust */}
+            {/* Trust indicator */}
             <div className="d-flex align-items-center gap-3">
-              <div className="d-flex" style={{ gap: '-6px' }}>
-                {['#c8f135','#39e75f','#60a5fa','#f472b6'].map((c, i) => (
+              <div className="d-flex" style={{ marginRight: '0.25rem' }}>
+                {[
+                  { bg: 'oklch(0.80 0.14 60)',  label: 'J' },
+                  { bg: 'oklch(0.76 0.14 200)', label: 'A' },
+                  { bg: 'oklch(0.74 0.14 320)', label: 'M' },
+                  { bg: 'oklch(0.78 0.14 140)', label: 'T' },
+                ].map((av, i) => (
                   <div
-                    key={c}
-                    className="rounded-circle border"
+                    key={i}
+                    className="rounded-circle d-flex align-items-center justify-content-center fw-semibold"
                     style={{
-                      width: '2rem',
-                      height: '2rem',
-                      background: c,
-                      borderColor: 'var(--bg-primary) !important',
+                      width: '1.625rem',
+                      height: '1.625rem',
+                      background: av.bg,
+                      border: '2px solid var(--bg-primary)',
                       marginLeft: i > 0 ? '-8px' : 0,
+                      fontSize: '0.625rem',
+                      color: '#0c0f11',
                     }}
-                  />
+                  >
+                    {av.label}
+                  </div>
                 ))}
               </div>
-              <p className="mb-0 text-sm" style={{ color: 'var(--text-muted)' }}>
-                Trusted by <span style={{ color: 'var(--text)', fontWeight: 600 }}>52,400+</span> TON traders
+              <p className="mb-0" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                Trusted by <span style={{ color: 'var(--text)', fontWeight: 500 }}>52,400+</span> TON traders
               </p>
             </div>
           </div>
 
-          {/* Right — swap card */}
+          {/* Right — swap card with glow */}
           <div className="col-12 col-lg-7 d-flex justify-content-center justify-content-lg-end">
-            <div style={{ width: '100%', maxWidth: '30rem' }}>
-              <SwapCard />
+            <div style={{ width: '100%', maxWidth: '30rem', position: 'relative' }}>
+              {/* Glow behind card */}
+              <div
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  top: '-10%',
+                  right: '-10%',
+                  width: '70%',
+                  height: '80%',
+                  background: 'radial-gradient(closest-side, rgba(200,241,53,0.18), transparent 70%)',
+                  filter: 'blur(40px)',
+                  pointerEvents: 'none',
+                  zIndex: 0,
+                }}
+              />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <SwapCard />
+              </div>
             </div>
           </div>
+
         </div>
       </div>
     </section>
@@ -156,7 +200,10 @@ function Protocols() {
     >
       <div className="max-w-6xl mx-auto px-4 mb-5">
         <SectionLabel text="Protocols" />
-        <h2 className="font-display fw-bold tracking-tighter" style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)', color: 'var(--text)' }}>
+        <h2
+          className="font-display fw-medium tracking-tighter"
+          style={{ fontSize: 'clamp(2rem, 3.8vw, 3.25rem)', color: 'var(--text)', letterSpacing: '-0.028em', lineHeight: 1.02 }}
+        >
           One aggregator.{' '}
           <span style={{ color: 'var(--text-muted)' }}>Every DEX worth using.</span>
         </h2>
@@ -164,7 +211,6 @@ function Protocols() {
 
       {/* Marquee */}
       <div style={{ position: 'relative' }}>
-        {/* Fade edges */}
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '8rem', background: 'linear-gradient(to right, var(--bg-section), transparent)', zIndex: 2, pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '8rem', background: 'linear-gradient(to left, var(--bg-section), transparent)', zIndex: 2, pointerEvents: 'none' }} />
 
@@ -178,7 +224,6 @@ function Protocols() {
               </div>
             ))}
           </div>
-          {/* Duplicate for seamless loop */}
           <div className="d-flex animate-marquee flex-shrink-0" style={{ gap: '0.75rem' }} aria-hidden>
             {PROTOCOLS.map((p, i) => (
               <div key={i} className="protocol-pill flex-shrink-0">
@@ -224,37 +269,29 @@ function Features() {
       <div className="max-w-6xl mx-auto px-4">
         <SectionLabel text="Features" />
         <h2
-          className="font-display fw-bold tracking-tighter mb-5"
-          style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)', color: 'var(--text)' }}
+          className="font-display fw-medium tracking-tighter mb-5"
+          style={{ fontSize: 'clamp(2rem, 3.8vw, 3.25rem)', color: 'var(--accent-lime)', letterSpacing: '-0.028em', lineHeight: 1.02 }}
         >
           Built for people who{' '}
-          <span style={{ color: 'var(--accent-lime)' }}>actually move money.</span>
+          <span style={{ color: 'var(--text-muted)' }}>actually move money.</span>
         </h2>
 
-        <div
-          className="overflow-hidden"
-          style={{ border: '1px solid var(--border)', borderRadius: '20px' }}
-        >
-          {FEATURES.map((f, i) => (
-            <div
-              key={f.num}
-              className={`feature-card d-flex flex-column flex-md-row align-items-md-start gap-4 ${i < FEATURES.length - 1 ? 'border-bottom' : ''}`}
-              style={{ borderRadius: 0, border: 'none', borderColor: 'var(--border)' }}
-            >
-              <div className="feature-number flex-shrink-0" style={{ minWidth: '2.5rem', paddingTop: '0.125rem' }}>{f.num}</div>
-              <div>
-                <h3
-                  className="font-display fw-bold mb-2"
-                  style={{ fontSize: '1.1875rem', color: 'var(--text)' }}
-                >
+        <div className="overflow-hidden" style={{ border: '1px solid var(--border)', borderRadius: '20px' }}>
+          <div className="feature-grid">
+            {FEATURES.map(f => (
+              <div key={f.num} className="feature-card" style={{ borderRadius: 0 }}>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--accent-lime)', letterSpacing: '0.04em', marginBottom: '2.5rem' }}>
+                  {f.num}
+                </div>
+                <h3 style={{ fontSize: '1.375rem', fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--text)', marginBottom: '0.75rem' }}>
                   {f.title}
                 </h3>
-                <p className="mb-0 text-sm" style={{ color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: '36rem' }}>
+                <p style={{ fontSize: '0.9375rem', lineHeight: 1.55, color: 'var(--text-muted)', maxWidth: '44ch', margin: 0 }}>
                   {f.body}
                 </p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -286,39 +323,37 @@ function HowItWorks() {
       <div className="max-w-6xl mx-auto px-4">
         <SectionLabel text="How it works" />
         <h2
-          className="font-display fw-bold tracking-tighter mb-5"
-          style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)', color: 'var(--text)' }}
+          className="font-display fw-medium tracking-tighter mb-5"
+          style={{ fontSize: 'clamp(2rem, 3.8vw, 3.25rem)', color: 'var(--text)', letterSpacing: '-0.028em', lineHeight: 1.02 }}
         >
           Three steps.{' '}
           <span style={{ color: 'var(--text-muted)' }}>No extra tabs open.</span>
         </h2>
 
-        <div className="d-flex flex-column gap-3">
+        <div className="how-grid">
           {STEPS.map(s => (
             <div
               key={s.num}
-              className="p-4 d-flex align-items-start gap-4"
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '20px' }}
+              style={{
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border)',
+                borderRadius: '20px',
+                padding: '1.75rem',
+                minHeight: '200px',
+                transition: 'border-color 0.2s, background 0.2s',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-2)'; (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-card-hover)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-card)'; }}
             >
-              <div
-                className="flex-shrink-0 d-flex align-items-center justify-content-center font-display fw-bold text-sm"
-                style={{
-                  width: '2.5rem',
-                  height: '2.5rem',
-                  borderRadius: '50%',
-                  background: 'var(--bg-card-2)',
-                  color: 'var(--accent-lime)',
-                  border: '1px solid var(--border-2)',
-                }}
-              >
+              <div style={{ fontFamily: 'monospace', fontSize: '3.75rem', color: 'var(--accent-lime)', letterSpacing: '0.06em' }}>
                 {s.num}
               </div>
-              <div>
-                <h3 className="font-display fw-bold mb-1" style={{ fontSize: '1.125rem', color: 'var(--text)' }}>
-                  {s.title}
-                </h3>
-                <p className="mb-0 text-sm" style={{ color: 'var(--text-muted)', lineHeight: 1.7 }}>{s.body}</p>
-              </div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--text)', marginBottom: '0.625rem' }}>
+                {s.title}
+              </h3>
+              <p style={{ fontSize: '0.875rem', lineHeight: 1.55, color: 'var(--text-muted)', margin: 0 }}>
+                {s.body}
+              </p>
             </div>
           ))}
         </div>
@@ -339,19 +374,19 @@ function Stats() {
   return (
     <section className="landing-section border-bottom" style={{ borderColor: 'var(--border)' }}>
       <div className="max-w-6xl mx-auto px-4">
-        <div
-          className="overflow-hidden"
-          style={{ border: '1px solid var(--border)', borderRadius: '20px' }}
-        >
-          <div className="row g-0">
-            {STATS.map((s, i) => (
-              <div
-                key={s.label}
-                className={`col-6 col-md-3 stat-card${i % 2 === 0 && i < 2 ? ' border-end' : ''}${i < 2 ? ' border-bottom border-md-bottom-0' : ''}`}
-                style={{ borderColor: 'var(--border)' }}
-              >
-                <h3 className="font-display">{s.value}</h3>
-                <p>{s.label}</p>
+        <div className="overflow-hidden" style={{ border: '1px solid var(--border)', borderRadius: '20px' }}>
+          <div className="stats-grid">
+            {STATS.map(s => (
+              <div key={s.label} style={{ background: 'var(--bg-primary)', padding: '2.25rem 1.75rem' }}>
+                <div
+                  className="font-display"
+                  style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '-0.025em', fontWeight: 400, color: 'var(--text)', lineHeight: 1 }}
+                >
+                  {s.value}
+                </div>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.375rem' }}>
+                  {s.label}
+                </div>
               </div>
             ))}
           </div>
@@ -367,43 +402,69 @@ function CTABanner() {
     <section className="landing-section border-bottom" style={{ borderColor: 'var(--border)', background: 'var(--bg-section)' }}>
       <div className="max-w-6xl mx-auto px-4">
         <div
-          className="text-center p-5 p-md-6"
-          style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px' }}
+          className="text-center"
+          style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: '24px',
+            padding: 'clamp(2.5rem, 7vw, 5.5rem)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
         >
-          <h2
-            className="font-display fw-bold tracking-tighter mb-3"
-            style={{ fontSize: 'clamp(1.75rem, 4vw, 3rem)', color: 'var(--text)' }}
-          >
-            Your whole TON life,{' '}
-            <span style={{ color: 'var(--accent-lime)' }}>in one tab.</span>
-          </h2>
-          <p className="mb-5 mx-auto" style={{ color: 'var(--text-muted)', maxWidth: '28rem', lineHeight: 1.7 }}>
-            Start swapping with the best rates on TON. Free, self-custodial, no account needed.
-          </p>
+          {/* Lime glow */}
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              inset: 'auto -20% -60% -20%',
+              height: '80%',
+              background: 'radial-gradient(closest-side, rgba(200,241,53,0.22), transparent 70%)',
+              filter: 'blur(30px)',
+              pointerEvents: 'none',
+            }}
+          />
 
-          <div className="d-flex align-items-center justify-content-center gap-3 flex-wrap mb-4">
-            <Link
-              href="/"
-              className="d-inline-flex align-items-center gap-2 fw-bold text-decoration-none btn-custom-lg"
-              style={{ background: 'var(--accent-lime)', color: '#0c0f11', borderRadius: '999px' }}
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h2
+              className="font-display fw-medium tracking-tighter mb-3 mx-auto"
+              style={{ fontSize: 'clamp(1.75rem, 4vw, 3rem)', color: 'var(--text)', letterSpacing: '-0.028em', lineHeight: 0.98, maxWidth: '18ch' }}
             >
-              Launch app
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-              </svg>
-            </Link>
-            <Link
-              href="/analytics"
-              className="d-inline-flex align-items-center gap-2 fw-medium text-decoration-none btn-custom-lg"
-              style={{ background: 'var(--bg-card-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: '999px' }}
-            >
-              View analytics
-            </Link>
+              Your whole TON life,{' '}
+              <span style={{ color: 'var(--text-muted)' }}>in one tab.</span>
+            </h2>
+            <p className="mb-5 mx-auto" style={{ color: 'var(--text-muted)', maxWidth: '28rem', lineHeight: 1.55, fontSize: '1rem' }}>
+              Start swapping with the best rates on TON. Free, self-custodial, no account needed.
+            </p>
+
+            <div className="d-flex align-items-center justify-content-center gap-3 flex-wrap mb-4">
+              <Link
+                href="/"
+                className="d-inline-flex align-items-center gap-2 fw-medium text-decoration-none btn-custom-lg"
+                style={{ background: 'var(--accent-lime)', color: '#0c0f11', borderRadius: '999px' }}
+                onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(1.08)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.filter = ''; e.currentTarget.style.transform = ''; }}
+              >
+                Launch app
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </Link>
+              <Link
+                href="/analytics"
+                className="d-inline-flex align-items-center gap-2 fw-medium text-decoration-none btn-custom-lg"
+                style={{ background: 'transparent', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: '999px', transition: 'background 160ms ease' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-card-2)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                View analytics
+              </Link>
+            </div>
+
+            <p className="mb-0" style={{ fontFamily: 'monospace', fontSize: '0.6875rem', color: 'var(--accent-lime)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              Powered by Omniston · STON.fi · DeDust · TONCO · TonConnect
+            </p>
           </div>
-
-          <p className="mb-0 text-xs" style={{ color: 'var(--text-dim)', letterSpacing: '0.05em' }}>
-            Powered by Omniston · STON.fi · DeDust · TONCO · TonConnect
-          </p>
         </div>
       </div>
     </section>
@@ -419,7 +480,7 @@ const FOOTER_LINKS = {
 
 function Footer() {
   return (
-    <footer className="border-top py-5 px-4" style={{ borderColor: 'var(--border)' }}>
+    <footer className="border-top py-5 px-4" style={{ borderColor: 'var(--border)', background: 'rgba(12,15,17,0.85)', }}>
       <div className="max-w-6xl mx-auto">
         <div className="row g-4 mb-5">
 
@@ -427,25 +488,22 @@ function Footer() {
           <div className="col-12 col-md-4">
             <div className="d-flex align-items-center gap-2 mb-3">
               <div
-                className="d-flex align-items-center justify-content-center"
-                style={{ width: '1.75rem', height: '1.75rem', borderRadius: '50%', background: 'var(--accent-lime)' }}
+                className="d-flex align-items-center justify-content-center flex-shrink-0"
+                style={{ width: '1.375rem', height: '1.375rem', borderRadius: '5px', background: 'var(--accent-lime)' }}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <path d="M7 16L12 4L17 16" stroke="#0c0f11" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M9 12H15" stroke="#0c0f11" strokeWidth="2.5" strokeLinecap="round"/>
-                </svg>
+                <div style={{ width: '7px', height: '7px', background: '#0c0f11', transform: 'rotate(45deg)', borderRadius: '1.5px' }} />
               </div>
-              <span className="fw-bold font-display" style={{ color: 'var(--text)' }}>Omniswap</span>
+              <span className="fw-medium font-display" style={{ color: 'var(--text)', letterSpacing: '-0.01em' }}>Omniswap</span>
             </div>
-            <p className="text-xs mb-0" style={{ color: 'var(--text-dim)', lineHeight: 1.7, maxWidth: '18rem' }}>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text)', lineHeight: 1.7, maxWidth: '18rem', margin: 0 }}>
               The best swap rates on TON. Powered by Omniston — MEV-protected, self-custodial, sub-10s settlement.
             </p>
           </div>
 
           {/* Links */}
           {Object.entries(FOOTER_LINKS).map(([group, links]) => (
-            <div key={group} className="col-6 col-md-2 col-lg-2 offset-lg-0">
-              <p className="text-xs fw-semibold mb-3" style={{ color: 'var(--text-dim)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <div key={group} className="col-6 col-md-2">
+              <p style={{ fontFamily: 'monospace', fontSize: '0.6875rem', fontWeight: 400, color: 'var(--text)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem' }}>
                 {group}
               </p>
               <div className="d-flex flex-column gap-2">
@@ -455,10 +513,10 @@ function Footer() {
                     href={href}
                     target={href.startsWith('http') ? '_blank' : undefined}
                     rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="text-sm text-decoration-none transition-colors"
-                    style={{ color: 'var(--text-muted)' }}
-                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                    className="text-decoration-none transition-colors"
+                    style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-lime)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
                   >
                     {label}
                   </Link>
@@ -473,10 +531,10 @@ function Footer() {
           className="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-4"
           style={{ borderTop: '1px solid var(--border)' }}
         >
-          <p className="text-xs mb-0" style={{ color: 'var(--text-dim)' }}>
+          <p style={{ fontFamily: 'monospace', fontSize: '0.6875rem', color: 'var(--text-dim)', letterSpacing: '0.06em', margin: 0 }}>
             © 2026 Omniswap Labs
           </p>
-          <p className="text-xs mb-0" style={{ color: 'var(--text-dim)', fontFamily: 'monospace' }}>
+          <p style={{ fontFamily: 'monospace', fontSize: '0.6875rem', color: 'var(--text-dim)', letterSpacing: '0.06em', margin: 0 }}>
             Built for the open internet
           </p>
         </div>

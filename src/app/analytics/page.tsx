@@ -49,7 +49,7 @@ export default function AnalyticsPage() {
               ← Swap
             </Link>
           </div>
-          <h1 className="fw-bold text-4xl tracking-tight mb-2" style={{ color: 'var(--text)' }}>
+          <h1 className="fw-bold text-4xl tracking-tight mb-2">
             Omniston <span style={{ color: 'var(--accent-green)' }}>Savings Analytics</span>
           </h1>
           <p style={{ color: 'var(--text-muted)' }}>
