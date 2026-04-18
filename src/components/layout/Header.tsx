@@ -25,7 +25,7 @@ export default function Header() {
 
         {/* Nav */}
         <nav className="d-none d-md-flex align-items-center gap-1">
-          {[['/', 'Swap'], ['/pools', 'Pools'], ['/analytics', 'Analytics']].map(([href, label]) => (
+          {[['/', 'Swap'], ['/analytics', 'Analytics']].map(([href, label]) => (
             <Link key={href}
               href={href}
               className="px-3 py-2 rounded-3 text-sm text-decoration-none transition-colors"
