@@ -137,6 +137,19 @@ export function PointsProvider({ children }: { children: React.ReactNode }) {
       } catch { /* URL parsing failed — skip */ }
     }
 
+    // Apply first-connect bonus directly here, before setRecord.
+    // React runs child effects before parent effects, so WalletButton's
+    // useEffect fires while record is still null — calling awardFirstConnect()
+    // from there silently no-ops. Baking the bonus in at load time avoids
+    // the race entirely.
+    if (!rec.flags.firstConnectAwarded) {
+      const bonus = POINTS_CONFIG.FIRST_CONNECT_BONUS;
+      rec.totalPoints              += bonus;
+      rec.breakdown.bonus          += bonus;
+      rec.flags.firstConnectAwarded = true;
+      pushEvent(rec, 'first_connect', bonus, 1);
+    }
+
     setRecord(rec);
   }, [walletAddr]);
 
