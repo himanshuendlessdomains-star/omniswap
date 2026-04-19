@@ -7,6 +7,7 @@ import { useTonConnectUI } from '@tonconnect/ui-react';
 import { NATIVE_TON, TON_TOKENS, parseUnits, formatUnits } from '@/lib/tokens';
 import { requestQuote, normalizeQuote } from '@/lib/omniston';
 import { fromNano, calcReturn } from '@/lib/tonstakers';
+import { usePoints } from '@/contexts/PointsContext';
 import type { BestQuote, Token } from '@/types';
 
 // ─── Aggregate platform stats (Omniston public metrics) ───────────────────────
@@ -38,6 +39,13 @@ const DEFAULT_OUT = TON_TOKENS[1]; // USDT
 const DEFAULT_AMOUNTS = ['1', '10', '100', '1000'];
 
 export default function AnalyticsPage() {
+  const { awardAnalyticsVisit, record } = usePoints();
+
+  // Award 1 point per day for visiting analytics. Idempotent within the 24-hour window.
+  useEffect(() => {
+    if (record) awardAnalyticsVisit();
+  }, [!!record]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="min-h-screen-nav py-section px-3">
       <div className="max-w-5xl mx-auto d-flex flex-column gap-10">

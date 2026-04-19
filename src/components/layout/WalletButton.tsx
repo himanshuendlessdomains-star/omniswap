@@ -1,12 +1,21 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import Button from '@/components/ui/Button';
 import { shortenAddress } from '@/lib/tonconnect';
+import { usePoints } from '@/contexts/PointsContext';
 
 export default function WalletButton() {
   const [tonConnectUI] = useTonConnectUI();
   const wallet = useTonWallet();
+  const { awardFirstConnect } = usePoints();
+
+  // Award the one-time first-connect bonus whenever a wallet address is present.
+  // The award function is idempotent — it checks the flag internally.
+  useEffect(() => {
+    if (wallet?.account.address) awardFirstConnect();
+  }, [wallet?.account.address, awardFirstConnect]);
 
   if (wallet) {
     return (

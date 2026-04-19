@@ -19,6 +19,8 @@ export default function HomePage() {
       <Hero />
       <Protocols />
       <Features />
+      <ExploreSection />
+      <OmniPointsSection />
       <HowItWorks />
       <Stats />
       <CTABanner />
@@ -298,6 +300,278 @@ function Features() {
   );
 }
 
+// ─── Explore section ──────────────────────────────────────────────────────────
+
+const EXPLORE_CARDS = [
+  {
+    href:    '/analytics',
+    label:   'ANALYTICS',
+    title:   'Live savings dashboard',
+    body:    'See exactly how much Omniston saves you vs. single-DEX routing. Real-time protocol distribution, volume stats, and a live quote calculator.',
+    cta:     'Explore analytics',
+    accent:  '#a5b4fc',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    ),
+  },
+  {
+    href:    '/staking',
+    label:   'STAKING',
+    title:   'Stake TON, earn yield',
+    body:    'Liquid staking via Tonstakers — deposit TON, receive tsTON that accrues staking rewards. Unstake any time. Boost your Omni Points multiplier.',
+    cta:     'Stake now',
+    accent:  'var(--accent-lime)',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+      </svg>
+    ),
+  },
+] as const;
+
+function ExploreSection() {
+  return (
+    <section className="landing-section border-bottom" style={{ borderColor: 'var(--border)' }}>
+      <div className="max-w-6xl mx-auto px-4">
+        <SectionLabel text="Platform" />
+        <h2
+          className="font-display fw-medium tracking-tighter mb-5"
+          style={{ fontSize: 'clamp(2rem, 3.8vw, 3.25rem)', color: 'var(--text)', letterSpacing: '-0.028em', lineHeight: 1.02 }}
+        >
+          More than swaps.{' '}
+          <span style={{ color: 'var(--text-muted)' }}>A full DeFi suite.</span>
+        </h2>
+
+        <div className="row g-4">
+          {EXPLORE_CARDS.map(card => (
+            <div key={card.href} className="col-12 col-md-6">
+              <Link
+                href={card.href}
+                className="d-flex flex-column h-100 text-decoration-none p-4"
+                style={{
+                  background:   'var(--bg-card)',
+                  border:       '1px solid var(--border)',
+                  borderRadius: '24px',
+                  transition:   'border-color 200ms ease, background 200ms ease',
+                  minHeight:    '240px',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = card.accent;
+                  (e.currentTarget as HTMLElement).style.background  = 'var(--bg-card-hover)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)';
+                  (e.currentTarget as HTMLElement).style.background  = 'var(--bg-card)';
+                }}
+              >
+                {/* Icon */}
+                <div
+                  className="d-flex align-items-center justify-content-center mb-4 flex-shrink-0"
+                  style={{
+                    width:        '44px',
+                    height:       '44px',
+                    borderRadius: '12px',
+                    background:   'var(--bg-card-2)',
+                    border:       '1px solid var(--border-2)',
+                    color:        card.accent,
+                  }}
+                >
+                  {card.icon}
+                </div>
+
+                {/* Label */}
+                <p style={{ fontFamily: 'monospace', fontSize: '0.6875rem', letterSpacing: '0.1em', color: card.accent, marginBottom: '0.5rem' }}>
+                  ◆ {card.label}
+                </p>
+
+                {/* Title */}
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--text)', marginBottom: '0.75rem' }}>
+                  {card.title}
+                </h3>
+
+                {/* Body */}
+                <p style={{ fontSize: '0.9rem', lineHeight: 1.6, color: 'var(--text-muted)', margin: 0, flexGrow: 1 }}>
+                  {card.body}
+                </p>
+
+                {/* CTA */}
+                <div className="d-flex align-items-center gap-2 mt-4" style={{ color: card.accent, fontSize: '0.875rem', fontWeight: 500 }}>
+                  {card.cta}
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Omni Points section ───────────────────────────────────────────────────────
+
+const EARN_WAYS = [
+  { pts: '+10',     label: 'Connect wallet',  sub: 'One-time welcome bonus',     mono: true  },
+  { pts: '+10',     label: 'First swap',      sub: 'One-time first-swap bonus',  mono: true  },
+  { pts: '1/$10',   label: 'Swap tokens',     sub: 'Per $10 of swap value',      mono: false },
+  { pts: '1/day',   label: 'Visit Analytics', sub: 'Daily engagement reward',    mono: false },
+];
+
+const BOOST_WAYS = [
+  {
+    title: 'Stake TON → boost up to 100×',
+    body:  '+1× multiplier for every $100 staked. Stake $10,000 and every point you earn is multiplied by 101×.',
+    accent: 'var(--accent-lime)',
+    href:   '/staking',
+    cta:    'Start staking',
+  },
+  {
+    title: 'Refer friends → boost up to 20×',
+    body:  '+1× multiplier for every friend who joins with your referral link. Max 20 referrals, max +20× on top of your staking boost.',
+    accent: '#a5b4fc',
+    href:   '/points',
+    cta:    'Get referral link',
+  },
+];
+
+function OmniPointsSection() {
+  return (
+    <section className="landing-section border-bottom" style={{ borderColor: 'var(--border)', background: 'var(--bg-section)' }}>
+      <div className="max-w-6xl mx-auto px-4">
+
+        <SectionLabel text="Omni Points" />
+        <div className="row align-items-end mb-5" style={{ gap: '1rem 0' }}>
+          <div className="col-12 col-md-7">
+            <h2
+              className="font-display fw-medium tracking-tighter mb-3"
+              style={{ fontSize: 'clamp(2rem, 3.8vw, 3.25rem)', color: 'var(--text)', letterSpacing: '-0.028em', lineHeight: 1.02 }}
+            >
+              Every action{' '}
+              <span style={{ color: 'var(--accent-lime)' }}>earns rewards.</span>
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.6, maxWidth: '36rem', margin: 0 }}>
+              Omni Points (OP) track your engagement across the platform. Swap, stake, and explore to accumulate points — then multiply them with staking and referral boosts.
+            </p>
+          </div>
+          <div className="col-12 col-md-5 d-md-flex justify-content-end">
+            <Link
+              href="/points"
+              className="d-inline-flex align-items-center gap-2 fw-medium text-decoration-none"
+              style={{
+                background:   'var(--bg-card)',
+                border:       '1px solid var(--border-2)',
+                color:        'var(--text)',
+                borderRadius: '999px',
+                padding:      '0.625rem 1.25rem',
+                fontSize:     '0.875rem',
+                transition:   'border-color 150ms ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-lime)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-2)')}
+            >
+              View your points
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </Link>
+          </div>
+        </div>
+
+        {/* Earn grid */}
+        <div className="overflow-hidden mb-4" style={{ border: '1px solid var(--border)', borderRadius: '20px' }}>
+          <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            {EARN_WAYS.map(w => (
+              <div key={w.label} style={{ background: 'var(--bg-primary)', padding: '1.5rem 1.25rem' }}>
+                <div
+                  className="font-display fw-medium mb-2"
+                  style={{
+                    fontSize:      'clamp(1.375rem, 2.5vw, 1.75rem)',
+                    color:         'var(--accent-lime)',
+                    letterSpacing: '-0.02em',
+                    lineHeight:    1,
+                    fontFamily:    w.mono ? 'monospace' : undefined,
+                  }}
+                >
+                  {w.pts}
+                </div>
+                <div className="fw-medium mb-1" style={{ fontSize: '0.875rem', color: 'var(--text)' }}>{w.label}</div>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.6875rem', color: 'var(--text-dim)' }}>{w.sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Boost cards */}
+        <div className="row g-3">
+          {BOOST_WAYS.map(b => (
+            <div key={b.title} className="col-12 col-md-6">
+              <div
+                className="p-4 h-100 d-flex flex-column"
+                style={{
+                  background:   'var(--bg-card)',
+                  border:       `1px solid var(--border)`,
+                  borderRadius: '20px',
+                }}
+              >
+                {/* Multiplier visual */}
+                <div className="d-flex align-items-center gap-2 mb-3">
+                  <span
+                    style={{
+                      fontFamily:    'monospace',
+                      fontSize:      '1.5rem',
+                      fontWeight:    700,
+                      color:         b.accent,
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    ×{b.title.includes('100') ? '100' : '20'}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily:  'monospace',
+                      fontSize:    '0.625rem',
+                      color:       b.accent,
+                      background:  b.accent === 'var(--accent-lime)' ? 'var(--accent-lime-dim)' : 'rgba(165,180,252,0.1)',
+                      border:      `1px solid ${b.accent === 'var(--accent-lime)' ? 'rgba(200,241,53,0.25)' : 'rgba(165,180,252,0.25)'}`,
+                      borderRadius: '999px',
+                      padding:     '2px 8px',
+                      letterSpacing: '0.06em',
+                    }}
+                  >
+                    MAX BOOST
+                  </span>
+                </div>
+
+                <h3 style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.5rem' }}>
+                  {b.title}
+                </h3>
+                <p style={{ fontSize: '0.875rem', lineHeight: 1.6, color: 'var(--text-muted)', margin: 0, flexGrow: 1 }}>
+                  {b.body}
+                </p>
+
+                <Link
+                  href={b.href}
+                  className="d-inline-flex align-items-center gap-1 text-decoration-none mt-3"
+                  style={{ fontSize: '0.8125rem', fontWeight: 500, color: b.accent }}
+                >
+                  {b.cta}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── How it works ─────────────────────────────────────────────────────────────
 const STEPS = [
   {
@@ -473,7 +747,7 @@ function CTABanner() {
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
 const FOOTER_LINKS = {
-  Product:    [['Swap', '/'], ['Analytics', '/analytics']],
+  Product:    [['Swap', '/'], ['Analytics', '/analytics'], ['Staking', '/staking'], ['Points', '/points']],
   Developers: [['Omniston SDK', 'https://docs.ston.fi/docs/developer-section/omniston'], ['TonConnect', 'https://docs.ton.org/develop/dapps/ton-connect/overview'], ['GitHub', 'https://github.com']],
   Community:  [['Telegram', 'https://t.me'], ['Twitter / X', 'https://x.com'], ['TON Foundation', 'https://ton.org']],
 };

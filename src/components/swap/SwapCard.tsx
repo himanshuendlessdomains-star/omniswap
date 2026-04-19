@@ -11,6 +11,7 @@ import QuoteDisplay from './QuoteDisplay';
 import RouteVisualizer from './RouteVisualizer';
 import TradeStatus from './TradeStatus';
 import Button from '@/components/ui/Button';
+import { usePoints } from '@/contexts/PointsContext';
 
 const DEFAULT_SLIPPAGE = 100; // 1%
 
@@ -30,6 +31,8 @@ export default function SwapCard() {
   const rawQuoteRef = useRef<any>(null);
   const [quoting, setQuoting] = useState(false);
   const [quoteError, setQuoteError] = useState('');
+
+  const { awardSwap, awardFirstSwap, tonUSDPrice } = usePoints();
 
   const [phase, setPhase] = useState<TradePhase>('idle');
   const [txHash, setTxHash] = useState('');
@@ -92,6 +95,22 @@ export default function SwapCard() {
   useEffect(() => {
     return () => { subRef.current?.unsubscribe?.(); };
   }, []);
+
+  // Award points when a trade settles. txHash is the unique identifier used
+  // for idempotency — the same boc string will never be double-awarded.
+  useEffect(() => {
+    if (phase !== 'trade_settled' || !txHash) return;
+    const sym = tokenIn?.symbol?.toUpperCase() ?? '';
+    const amt = parseFloat(amountIn) || 0;
+    let usdValue = 0;
+    if (sym.includes('USD') || sym === 'USDC' || sym === 'DAI') {
+      usdValue = amt;
+    } else if (sym === 'TON' && tonUSDPrice > 0) {
+      usdValue = amt * tonUSDPrice;
+    }
+    awardFirstSwap();
+    awardSwap(usdValue, txHash);
+  }, [phase]); // intentionally only re-runs on phase change
 
   function flipTokens() {
     setTokenIn(tokenOut);

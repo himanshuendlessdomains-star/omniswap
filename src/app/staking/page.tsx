@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import Button from '@/components/ui/Button';
 import { fromNano, toNano, calcReturn } from '@/lib/tonstakers';
+import { usePoints } from '@/contexts/PointsContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PublicData {
@@ -152,6 +153,14 @@ function useStaking() {
 export default function StakingPage() {
   const sdk = useStaking();
   const { pub, user } = sdk;
+  const { updateStakingBoost } = usePoints();
+
+  // Keep the staking boost in sync whenever the user's staked balance or TON price changes.
+  useEffect(() => {
+    const stakedTON = user.stakedBalance !== null ? fromNano(user.stakedBalance) : 0;
+    const tonUSD    = pub.rates?.TONUSD ?? 0;
+    updateStakingBoost(stakedTON, tonUSD);
+  }, [user.stakedBalance, pub.rates?.TONUSD, updateStakingBoost]);
 
   return (
     <div className="min-h-screen-nav" style={{ background: 'var(--bg-primary)' }}>
