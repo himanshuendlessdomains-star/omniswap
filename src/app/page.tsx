@@ -338,7 +338,7 @@ function ExploreSection() {
         <SectionLabel text="Platform" />
         <h2
           className="font-display fw-medium tracking-tighter mb-5"
-          style={{ fontSize: 'clamp(2rem, 3.8vw, 3.25rem)', color: 'var(--text)', letterSpacing: '-0.028em', lineHeight: 1.02 }}
+          style={{ fontSize: 'clamp(2rem, 3.8vw, 3.25rem)', color: 'var(--accent-green)', letterSpacing: '-0.028em', lineHeight: 1.02 }}
         >
           More than swaps.{' '}
           <span style={{ color: 'var(--text-muted)' }}>A full DeFi suite.</span>
