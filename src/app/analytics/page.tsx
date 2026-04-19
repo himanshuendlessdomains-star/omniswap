@@ -532,7 +532,15 @@ function StakingReturns() {
 
     import('tonstakers-sdk').then(({ Tonstakers }) => {
       if (!mounted) return;
-      const ts = new Tonstakers({ connector: tonConnectUI as any });
+      const connector = {
+        sendTransaction: (tx: any) => (tonConnectUI as any).sendTransaction(tx),
+        onStatusChange: (cb: (wallet: any) => void) => {
+          const current = (tonConnectUI as any).wallet;
+          if (current) cb(current);
+          return (tonConnectUI as any).onStatusChange(cb);
+        },
+      };
+      const ts = new Tonstakers({ connector });
 
       Promise.all([
         ts.getCurrentApy().catch(() => null),

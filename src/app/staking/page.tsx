@@ -43,7 +43,19 @@ function useStaking() {
 
     import('tonstakers-sdk').then(({ Tonstakers }) => {
       if (!mounted) return;
-      const ts = new Tonstakers({ connector: tonConnectUI as any });
+
+      // TonConnect's onStatusChange never fires the current state — only future changes.
+      // Wrap the connector so Tonstakers' initialize() sees the already-connected wallet.
+      const connector = {
+        sendTransaction: (tx: any) => (tonConnectUI as any).sendTransaction(tx),
+        onStatusChange: (cb: (wallet: any) => void) => {
+          const current = (tonConnectUI as any).wallet;
+          if (current) cb(current);
+          return (tonConnectUI as any).onStatusChange(cb);
+        },
+      };
+
+      const ts = new Tonstakers({ connector });
       tsRef.current = ts;
 
       // Fetch public data (no wallet needed)
