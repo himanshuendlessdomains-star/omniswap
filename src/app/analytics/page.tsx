@@ -42,9 +42,10 @@ export default function AnalyticsPage() {
   const { awardAnalyticsVisit, record } = usePoints();
 
   // Award 1 point per day for visiting analytics. Idempotent within the 24-hour window.
+  // Dep on walletAddress (not whole record) so it fires per wallet, not on every record mutation.
   useEffect(() => {
     if (record) awardAnalyticsVisit();
-  }, [!!record]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [record?.walletAddress, awardAnalyticsVisit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen-nav py-section px-3">

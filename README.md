@@ -10,6 +10,7 @@ Smart-routing DEX aggregator powered by [Omniston](https://omniston.ston.fi) —
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![TON](https://img.shields.io/badge/TON-Blockchain-0098EA?logo=ton&logoColor=white)](https://ton.org)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
 [![Vercel](https://img.shields.io/badge/Deployed-Vercel-black?logo=vercel&logoColor=white)](https://omniswap-three.vercel.app)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
@@ -26,463 +27,386 @@ Smart-routing DEX aggregator powered by [Omniston](https://omniston.ston.fi) —
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
-- [Data Flow](#data-flow)
 - [Omni Points System](#omni-points-system)
-- [Liquid Staking (Tonstakers)](#liquid-staking-tonstakers)
+- [Liquid Staking](#liquid-staking)
 - [Analytics Dashboard](#analytics-dashboard)
-- [Supported Tokens](#supported-tokens)
-- [Getting Started](#getting-started)
+- [Database Setup (Supabase)](#database-setup-supabase)
 - [Environment Variables](#environment-variables)
-- [Deployment](#deployment)
+- [Getting Started](#getting-started)
+- [Security Notes](#security-notes)
+- [Known Limitations](#known-limitations)
 
 ---
 
 ## Overview
 
-OmniSwap is a non-custodial DEX aggregator built on the **TON blockchain**. Instead of routing your swap through a single exchange, it queries all major TON DEXes simultaneously and finds the optimal split — sending portions of your trade to whichever pools offer the best effective rate, minimising price impact and maximising your output.
+OmniSwap is a production-grade DEX aggregator on the TON blockchain. It sources quotes from all major TON DEXes simultaneously via the Omniston protocol and routes each swap through the optimal combination of pools to guarantee the best output for any trade size.
 
-Under the hood it uses the **Omniston WebSocket SDK** (`wss://omni-ws.ston.fi`) to stream real-time quotes from competing resolvers, picks the best one, and executes the entire multi-leg trade as a single atomic on-chain transaction via **TonConnect**.
+### What makes it different
 
-```
-You enter 100 TON → Omniston routes → 60% STON.fi v2 + 40% DeDust → You receive max USDT
-```
+| Feature | OmniSwap | Single DEX |
+|---|---|---|
+| Price source | 4 DEXes simultaneously | 1 pool |
+| Split routing | Yes — any ratio | No |
+| MEV protection | Omniston resolver network | Depends on DEX |
+| Liquid staking | Integrated (Tonstakers) | Not applicable |
+| Engagement rewards | Omni Points system | Not applicable |
 
 ---
 
 ## Features
 
-| Feature | Description |
+| Category | Feature |
 |---|---|
-| 🔀 **Smart Routing** | Splits trades across up to 4 DEXes to minimise price impact |
-| ⚡ **Real-time Quotes** | WebSocket streaming — best quote updates live as resolvers compete |
-| 🔒 **Atomic Execution** | All swap legs in one transaction; reverts entirely if any leg fails |
-| 💸 **Savings Analytics** | Live calculator showing exactly how much Omniston saved you vs single-DEX |
-| 👛 **TonConnect** | Connect any TON wallet (Tonkeeper, MyTonWallet, OpenMask, etc.) |
-| ⚙️ **Slippage Control** | Configure 0.5 / 1 / 2% tolerance per swap |
-| 📊 **Route Visualiser** | See which protocols handled what percentage of your trade |
-| 🔄 **Trade Tracker** | Real-time status through every phase: Transfer → Swap → Settle |
-| 🏦 **Liquid Staking** | Stake TON via Tonstakers — receive tsTON, unstake any time |
-| ⭐ **Omni Points** | Earn points for every on-platform action; boost with staking and referrals |
+| **Swap** | Smart routing via Omniston across STON.fi v1/v2, DeDust, TONCO |
+| **Swap** | Real-time quote streaming with best-price selection |
+| **Swap** | Live route visualiser — see exactly which pools are used |
+| **Swap** | Slippage protection with configurable tolerance |
+| **Swap** | Sub-10s settlement with atomic execution |
+| **Staking** | Liquid staking via Tonstakers SDK (TON → tsTON) |
+| **Staking** | Standard, instant, and best-rate unstake modes |
+| **Staking** | Live APY, TVL, and projected returns calculator |
+| **Analytics** | Live savings calculator with real Omniston quotes |
+| **Analytics** | Protocol distribution chart and top-pairs table |
+| **Analytics** | Tonstakers APY and staker statistics |
+| **Points** | Omni Points engagement reward system (see below) |
+| **Points** | Rank tiers: Bronze → Silver → Gold → Platinum → Diamond |
+| **Points** | Multiplier boosts via staking and referrals |
+| **UX** | Mobile-responsive with hamburger menu |
+| **UX** | Wallet-gated flows with TonConnect |
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                          OmniSwap Frontend                          │
-│                        (Next.js 16 / React 19)                      │
-└────────────────────────────┬────────────────────────────────────────┘
-                             │
-           ┌─────────────────┼──────────────────┬─────────────────┐
-           │                 │                  │                 │
-           ▼                 ▼                  ▼                 ▼
-  ┌────────────────┐ ┌──────────────┐ ┌─────────────────┐ ┌──────────────┐
-  │  Omniston SDK  │ │  TonConnect  │ │ Tonstakers SDK  │ │PointsContext │
-  │  WebSocket     │ │  UI React    │ │  liquid staking │ │ localStorage │
-  │  wss://omni-ws │ │  v2.4.4      │ │  on TON         │ │ + CoinGecko  │
-  │  .ston.fi      │ │              │ └────────┬────────┘ └──────────────┘
-  └───────┬────────┘ └──────┬───────┘          │
-          │                 │                  │
-          ▼                 ▼                  ▼
-  ┌───────────────────────────────────────────────┐
-  │               TON Blockchain                  │
-  │  STON.fi v1 · STON.fi v2 · DeDust · TONCO     │
-  │  Tonstakers liquid staking contract            │
-  └───────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│                    Next.js 16 (App Router)           │
+│                                                      │
+│  ┌──────────┐  ┌────────────┐  ┌────────────────┐  │
+│  │  / Swap  │  │ /analytics │  │   /staking     │  │
+│  └────┬─────┘  └─────┬──────┘  └───────┬────────┘  │
+│       │               │                  │           │
+│  ┌────▼───────────────▼──────────────────▼────────┐ │
+│  │              PointsProvider (Context)           │ │
+│  │   React state cache + Supabase persistence     │ │
+│  └────────────────────────┬────────────────────────┘ │
+│                           │                          │
+│  ┌────────────────────────▼────────────────────────┐ │
+│  │          TonConnectUIProvider (wallet)          │ │
+│  └─────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+         │                    │                   │
+         ▼                    ▼                   ▼
+   Omniston WS           Tonstakers SDK       Supabase
+   (swap quotes)         (staking data)     (points DB)
 ```
 
-### Component Architecture
+### Data flow
 
-```
-src/
-├── app/                          # Next.js App Router
-│   ├── layout.tsx                # Root layout — fonts, Bootstrap, providers
-│   ├── page.tsx                  # Home — hero + SwapCard
-│   ├── analytics/page.tsx        # Analytics — savings dashboard + staking returns
-│   ├── staking/page.tsx          # Liquid staking — stake/unstake TON
-│   ├── points/page.tsx           # Omni Points dashboard
-│   └── providers.tsx             # TonConnectUIProvider + PointsProvider
-│
-├── contexts/
-│   └── PointsContext.tsx         # ★ Points state, localStorage, all award logic
-│
-├── components/
-│   ├── layout/
-│   │   ├── Header.tsx            # Sticky nav — logo, links, wallet button, points badge
-│   │   └── WalletButton.tsx      # Connect / disconnect + first-connect bonus trigger
-│   │
-│   ├── swap/
-│   │   ├── SwapCard.tsx          # ★ Main swap interface — awards points on trade_settled
-│   │   ├── TokenSelector.tsx     # Modal token picker with search
-│   │   ├── QuoteDisplay.tsx      # Rate, resolver, gas, fee breakdown table
-│   │   ├── RouteVisualizer.tsx   # Protocol pills showing trade path
-│   │   └── TradeStatus.tsx       # Step-by-step trade progress tracker
-│   │
-│   └── ui/
-│       ├── Button.tsx            # Reusable button — primary/secondary/yellow/ghost
-│       ├── Badge.tsx             # Protocol & status badges
-│       └── PointsBadge.tsx       # Header points counter with rank colour + multiplier
-│
-├── lib/
-│   ├── omniston.ts               # ★ Omniston SDK — quote, build, track
-│   ├── tokens.ts                 # Token list, formatUnits, parseUnits
-│   ├── tonconnect.ts             # Wallet address helpers
-│   ├── tonstakers.ts             # Nanoton helpers — fromNano, toNano, calcReturn
-│   └── points.ts                 # ★ Pure points logic — config, types, calculators
-│
-├── types/index.ts                # Token, BestQuote, Route, TradePhase …
-│
-└── styles/
-    ├── variables.scss            # CSS custom properties — all design tokens
-    └── globals.scss              # Global styles, utilities, animations
-```
+1. **Swap** — `SwapCard` streams quotes via Omniston WebSocket → user confirms → TonConnect sends transaction → on `trade_settled` phase, `awardSwap()` is called
+2. **Staking** — Tonstakers SDK initialised with a connector wrapper that replays the already-connected wallet state → balances and rates fetched → `updateStakingBoost()` keeps the multiplier in sync
+3. **Points** — All award functions update React state optimistically, then `useEffect([record])` flushes to Supabase asynchronously
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Version |
-|---|---|---|
-| Framework | [Next.js](https://nextjs.org) | 16.2.4 |
-| UI Library | [React](https://react.dev) | 19.2.4 |
-| Language | [TypeScript](https://typescriptlang.org) | ^5 |
-| DEX Aggregation | [@ston-fi/omniston-sdk](https://www.npmjs.com/package/@ston-fi/omniston-sdk) | ^0.7.9 |
-| Wallet Connection | [@tonconnect/ui-react](https://www.npmjs.com/package/@tonconnect/ui-react) | ^2.4.4 |
-| Liquid Staking | [tonstakers-sdk](https://github.com/tonstakers/tonstakers-sdk) | latest |
-| Styling | [Bootstrap](https://getbootstrap.com) + [Sass](https://sass-lang.com) | 5.3.3 / ^1.99 |
-| Reactivity | [RxJS](https://rxjs.dev) (Omniston streams) | ^7.8.2 |
-| Deployment | [Vercel](https://vercel.com) | — |
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16.2.4 (App Router) |
+| Language | TypeScript 5 |
+| UI | React 19, Bootstrap 5 utility classes, custom CSS variables |
+| Wallet | TonConnect UI React (`@tonconnect/ui-react`) |
+| Swap protocol | Omniston (`@ston-fi/omniston-sdk`) |
+| Liquid staking | Tonstakers SDK (`tonstakers-sdk`) |
+| Database | Supabase (PostgreSQL) via `@supabase/supabase-js` + `@supabase/ssr` |
+| TON price | CoinGecko public API (one fetch on mount) |
+| Deployment | Vercel |
 
 ---
 
 ## Project Structure
 
 ```
-omniswap/
-├── public/
-│   ├── icon.png                  # App icon (used by TonConnect)
-│   └── tonconnect-manifest.json  # TonConnect app metadata
-│
-├── src/
-│   ├── app/                      # Next.js App Router pages
-│   ├── contexts/                 # React contexts (PointsContext)
-│   ├── components/               # React components
-│   ├── lib/                      # Business logic & SDK wrappers
-│   ├── styles/                   # SCSS design system
-│   └── types/                    # TypeScript interfaces
-│
-├── .env.example                  # Environment variable template
-├── next.config.ts                # Next.js config — image domains
-├── tsconfig.json                 # TypeScript config — strict mode
-└── postcss.config.js             # PostCSS with autoprefixer
-```
-
----
-
-## Data Flow
-
-### Quote Flow
-
-```
-User types amount
-       │
-       ▼ (600ms debounce)
-SwapCard.fetchQuote()
-       │
-       ▼
-lib/omniston.ts → requestQuote()
-       │
-       ▼
-Omniston WebSocket (wss://omni-ws.ston.fi)
-       │
-       │  streams BestQuote events (resolvers compete)
-       ▼
-normalizeQuote()  ──→  picks highest askUnits
-       │
-       ▼
-QuoteDisplay  +  RouteVisualizer  +  amountOut field
-```
-
-### Swap Execution Flow
-
-```
-User clicks "Swap"
-       │
-       ▼
-buildTransfer(rawQuote, walletAddress)
-       │
-       ▼
-TonConnect → sendTransaction()   ←── user approves in wallet
-       │
-       ▼
-TON Blockchain — atomic multi-DEX execution
-       │
-       ▼
-omniston.trackTrade()  (WebSocket stream)
-       │
-       ├── transferring
-       ├── swapping
-       ├── receiving_funds
-       └── trade_settled ✓
-              │
-              ▼
-       PointsContext.awardSwap()  ──→  localStorage
+src/
+├── app/
+│   ├── page.tsx             — Home page (hero, explore, points sections)
+│   ├── analytics/page.tsx   — Analytics dashboard + staking returns
+│   ├── staking/page.tsx     — Liquid staking UI
+│   ├── points/page.tsx      — Omni Points dashboard
+│   ├── layout.tsx           — Root layout
+│   └── providers.tsx        — TonConnectUIProvider + PointsProvider
+├── components/
+│   ├── layout/
+│   │   ├── Header.tsx       — Sticky nav with mobile hamburger
+│   │   └── WalletButton.tsx — Connect/disconnect button
+│   ├── swap/
+│   │   ├── SwapCard.tsx     — Main swap interface
+│   │   ├── TokenSelector.tsx
+│   │   ├── QuoteDisplay.tsx
+│   │   ├── RouteVisualizer.tsx
+│   │   └── TradeStatus.tsx
+│   └── ui/
+│       ├── PointsBadge.tsx  — Header rank + points display
+│       └── Button.tsx
+├── contexts/
+│   └── PointsContext.tsx    — Points state, Supabase persistence, award logic
+├── lib/
+│   ├── points.ts            — Pure calculation functions + types
+│   ├── omniston.ts          — Omniston SDK helpers
+│   ├── tonstakers.ts        — Tonstakers helpers (fromNano, calcReturn)
+│   ├── tokens.ts            — Token list + unit helpers
+│   └── tonconnect.ts        — Address formatter
+└── utils/
+    └── supabase/
+        ├── client.ts        — Browser Supabase client
+        ├── server.ts        — Server-side Supabase client (RSC/API routes)
+        └── middleware.ts    — Middleware session refresh helper
 ```
 
 ---
 
 ## Omni Points System
 
-Omni Points (OP) are an engagement reward system stored in `localStorage`, keyed per wallet address. All logic lives in `src/lib/points.ts` (pure functions) and `src/contexts/PointsContext.tsx` (React state + persistence).
+Users earn **Omni Points (OP)** for engaging with the platform. Points are stored per-wallet in Supabase and persist across devices and browsers.
 
-### Earning Points
+### Earning points
 
-| Action | Base Points | Notes |
+| Action | Points | Notes |
 |---|---|---|
-| Connect wallet | **+10 OP** | One-time bonus; awarded in `WalletButton` on first connect |
-| First swap | **+10 OP** | One-time bonus; awarded when `trade_settled` fires for the first time |
-| Swap tokens | **1 OP per $10** | Applied on every `trade_settled`; USD value estimated from token symbol + live TON price |
-| Visit Analytics | **1 OP per day** | Rate-limited to once per 24 h via timestamp stored in the record |
+| Connect wallet | **+10 OP** | One-time bonus |
+| First swap | **+10 OP** | One-time bonus |
+| Swap tokens | **1 OP per $10 swapped** | Multiplied by boost |
+| Visit Analytics | **1 OP per day** | 24-hour cooldown |
 
-All non-bonus points are multiplied by the user's current **multiplier** before being credited.
+### Multiplier boosts
 
-### Multiplier Boosts
+Total multiplier = `1 + stakingBoost + referralBoost`
+
+| Boost | Rate | Cap |
+|---|---|---|
+| Staking boost | +1× per $100 staked | 100× |
+| Referral boost | +1× per referral | 20× |
+
+**Example:** User with $500 staked (5×) and 3 referrals (3×) has a 9× multiplier. A $100 swap earns `10 base × 9 = 90 OP`.
+
+### Rank tiers
+
+| Rank | Points required |
+|---|---|
+| Bronze | 0 – 99 |
+| Silver | 100 – 499 |
+| Gold | 500 – 1,999 |
+| Platinum | 2,000 – 9,999 |
+| Diamond | 10,000+ |
+
+### Referral system
+
+- Each wallet has a unique referral code derived from the last 10 hex characters of their address
+- Share `https://omniswap.app/?ref=CODE` — when a new wallet connects via this link, the referrer gains +1× multiplier
+- Self-referrals are blocked (code checked against own address)
+- Referral count is derived from a live Supabase query (not a mutable counter) for accuracy
+
+### Anti-gaming measures
+
+| Attack vector | Mitigation |
+|---|---|
+| Duplicate swap points | `seenSwapTxIds` array with txHash dedup — stored in Supabase |
+| Analytics farming | `lastAnalyticsAward` timestamp — 24h cooldown enforced server-side |
+| First-connect replay | `firstConnectAwarded` boolean flag — write-once |
+| First-swap replay | `firstSwapAwarded` boolean flag — write-once |
+| Self-referral | Referral code compared against own wallet's derived code |
+
+### Implementation architecture
 
 ```
-totalMultiplier = 1 + stakingBoost + referralBoost
+src/lib/points.ts          — Pure functions: calcMultiplier, calcSwapBasePoints,
+                              genReferralCode, getPointsRank (no side effects)
+src/contexts/PointsContext.tsx — React state + Supabase sync
+                              Optimistic local updates → async DB flush
 ```
 
-| Boost source | Rate | Maximum |
-|---|---|---|
-| Staking TON | +1× per $100 staked | 100× |
-| Referring friends | +1× per referral | 20× |
-
-**Example:** User stakes $500 (5×) and has referred 3 friends (3×) → multiplier = **1 + 5 + 3 = 9×**. A $50 swap earns 5 base points × 9 = **45 OP**.
-
-### Staking Boost Mechanics
-
-- Derived from `user.stakedBalance` (nanotons) × `pub.rates.TONUSD`
-- Updated in real-time whenever the staking page re-fetches user data
-- Formula: `floor(stakedUSD / 100)`, capped at 100
-
-### Referral System
-
-- Each wallet has a unique referral code derived from the last 10 hex chars of its address
-- Share URL format: `https://omniswap.app/?ref=<CODE>`
-- On wallet connect, the `?ref=` param is read from the URL
-- Self-referrals are rejected (`refCode !== own code`)
-- Referral counts are stored in a shared localStorage key (`omniswap_ref_v1_<CODE>`) so the referrer's boost updates when they next connect on the same device
-- A wallet can only be referred once (first referral code wins)
-
-### Rank Tiers
-
-| Rank | Threshold |
-|---|---|
-| Bronze | 0 – 99 OP |
-| Silver | 100 – 499 OP |
-| Gold | 500 – 1,999 OP |
-| Platinum | 2,000 – 9,999 OP |
-| Diamond | 10,000+ OP |
-
-### Security & Anti-Gaming
-
-| Concern | Mitigation |
-|---|---|
-| Double-awarding a swap | `seenSwapTxIds` array; transaction hash checked before every award |
-| Analytics farming | 24-hour cooldown enforced by comparing `Date.now()` to `lastAnalyticsAward` |
-| Self-referral | Referral code compared to own code before processing |
-| Double-referral | `referral.referredBy` field — once set, URL param is ignored |
-| Unbounded storage | `seenSwapTxIds` capped at 500 entries; history capped at 100 events |
-| Out-of-range boosts | All boost inputs clamped with `Math.min(value, MAX)` in `calcMultiplier` |
-| Tampered localStorage | Schema version check on load — mismatched version resets the record |
-
-> **Known limitation:** `localStorage` data is fully client-controlled. Without a backend, a determined user can edit their point total directly. The system is designed for honest engagement incentives, not high-stakes rewards that require server-side verification.
-
-### Points Dashboard (`/points`)
-
-- Total points with rank colour and progress bar to next tier
-- Multiplier breakdown (base + staking + referral)
-- Task checklist with live completion status
-- Copy-to-clipboard referral link
-- Scrollable earnings history (last 20 events with type, base, multiplier, earned, timestamp)
+**Race condition fix:** The first-connect bonus is applied directly inside the wallet-load `useEffect` (before `setRecord` is called) rather than from a child component effect. This avoids the React child-before-parent effects ordering issue where the bonus would see `record = null` and silently no-op.
 
 ---
 
-## Liquid Staking (Tonstakers)
+## Liquid Staking
 
-The `/staking` page integrates the [Tonstakers SDK](https://github.com/tonstakers/tonstakers-sdk) for liquid staking on TON.
+Liquid staking is powered by the [Tonstakers SDK](https://tonstakers.com). Users deposit TON and receive **tsTON** — a liquid receipt token that appreciates in value as staking rewards accrue.
 
-### How It Works
+### Tonstakers initialisation fix
 
-1. User deposits TON → receives **tsTON** (liquid staking token)
-2. tsTON accrues value as staking rewards accumulate
-3. User can unstake at any time via three modes:
-   - **Standard** — waits for the next staking round (~36 h)
-   - **Instant** — uses pool liquidity for immediate exit (may have a small fee)
-   - **Best Rate** — automatically picks the optimal exit path
+TonConnect's `onStatusChange` only fires on **future** wallet state changes. If a wallet is already connected when the page loads, the SDK's `initialize()` never receives the wallet and stays in an uninitialised state.
 
-### SDK Initialization Fix
+**Fix applied** (in both `staking/page.tsx` and `analytics/page.tsx`):
 
-The Tonstakers SDK relies on `connector.onStatusChange()` to detect wallet connections. However, `TonConnect.onStatusChange` only fires on **future** status changes — it does not replay the current wallet state to new subscribers. If the wallet is already connected when the staking page loads, `Tonstakers.ready` would never become `true`.
-
-**Fix** (`staking/page.tsx` and `analytics/page.tsx`): a thin connector wrapper that immediately invokes the callback with `tonConnectUI.wallet` (if present) before registering the TonConnect subscription:
-
-```ts
+```typescript
 const connector = {
   sendTransaction: (tx) => tonConnectUI.sendTransaction(tx),
   onStatusChange: (cb) => {
+    // Replay current wallet state immediately so SDK initialises on load
     const current = tonConnectUI.wallet;
-    if (current) cb(current);           // replay current state
-    return tonConnectUI.onStatusChange(cb); // then subscribe to future changes
+    if (current) cb(current);
+    return tonConnectUI.onStatusChange(cb);
   },
 };
+const ts = new Tonstakers({ connector });
 ```
 
-### Staking → Points Integration
+### Staking boost sync
 
-After each user data refresh (on wallet connect, post-stake, post-unstake), `StakingPage` calls:
-
-```ts
-updateStakingBoost(fromNano(user.stakedBalance), pub.rates.TONUSD)
-```
-
-This updates `boosts.staking` in `PointsContext`, which immediately recalculates the multiplier applied to all future point awards.
+The `updateStakingBoost(stakedTON, tonUSD)` function is called from a `useEffect` in `StakingPage` that depends on `[user.stakedBalance, pub.rates?.TONUSD]`. It calculates `stakedUSD = stakedTON × tonUSD` and sets the staking boost (`floor(stakedUSD / 100)`, capped at 100). The boost is saved to Supabase on the next flush cycle.
 
 ---
 
 ## Analytics Dashboard
 
-The `/analytics` page shows real-time and aggregate savings data:
+The analytics page shows:
+- Platform stats (total volume, swaps routed, estimated savings, avg price improvement)
+- Live savings calculator using real Omniston quotes
+- Protocol distribution chart (STON.fi v1/v2, DeDust, TONCO)
+- How Omniston routing saves money (step-by-step explainer)
+- Top pairs by savings
+- Tonstakers APY + TVL + staker count
+- Returns calculator for projected staking earnings
 
-- **Platform Stats** — $24M+ total volume, 52,400+ swaps, $71,800+ saved
-- **Live Savings Calculator** — enter any amount, fetch a real Omniston quote, and see:
-  - Best Omniston output vs single-DEX estimate
-  - Exact savings in tokens + percentage
-  - Per-protocol route split (bar chart)
-- **Protocol Distribution** — 30-day volume share across all four DEXes
-- **Staking Returns** — live APY from Tonstakers + 30 / 90 / 365-day return projections
-- **Top Pairs by Savings** — highest-saving token pairs with trade counts and volume
-
-Visiting the analytics page also awards **1 Omni Point per day** (rate-limited; only credited while a wallet is connected).
+**Stats note:** `PLATFORM_STATS` values are static display figures representing aggregate metrics. For real-time on-chain data, integrate with Omniston's analytics API or TON indexer.
 
 ---
 
-## Supported Tokens
+## Database Setup (Supabase)
 
-| Symbol | Name | Decimals | Contract |
-|---|---|---|---|
-| **TON** | Toncoin | 9 | Native |
-| **USDT** | Tether USD | 6 | `EQCxE6mU...sDs` |
-| **STON** | STON | 9 | `EQB-MPwr...728` |
-| **SCALE** | Scaleton | 9 | `EQBlqsm1...ALE` |
-| **BOLT** | Bolt | 9 | `EQDQoc5M...qB3` |
-| **jUSDC** | jUSDC | 6 | `EQAvDfWF...6y` |
-| **pTON** | Proxy TON | 9 | `EQCM3B12...cmZ` |
+Run the following SQL in **Supabase Dashboard → SQL Editor** to create the schema:
 
-Routing is provided by **four DEX protocols**:
+```sql
+-- Points records (one row per wallet address)
+CREATE TABLE public.points_records (
+  wallet_address        TEXT        PRIMARY KEY,
+  total_points          INTEGER     NOT NULL DEFAULT 0,
+  breakdown_swap        INTEGER     NOT NULL DEFAULT 0,
+  breakdown_analytics   INTEGER     NOT NULL DEFAULT 0,
+  breakdown_bonus       INTEGER     NOT NULL DEFAULT 0,
+  boost_staking         INTEGER     NOT NULL DEFAULT 0,
+  boost_referral        INTEGER     NOT NULL DEFAULT 0,
+  flag_first_connect    BOOLEAN     NOT NULL DEFAULT FALSE,
+  flag_first_swap       BOOLEAN     NOT NULL DEFAULT FALSE,
+  referral_code         TEXT,
+  referred_by           TEXT,
+  referral_count        INTEGER     NOT NULL DEFAULT 0,
+  last_analytics_award  BIGINT      NOT NULL DEFAULT 0,
+  seen_swap_tx_ids      TEXT[]      NOT NULL DEFAULT '{}',
+  version               INTEGER     NOT NULL DEFAULT 1,
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
+-- Points events (append-only history, one row per earning event)
+CREATE TABLE public.points_events (
+  id             TEXT        PRIMARY KEY,
+  wallet_address TEXT        NOT NULL REFERENCES public.points_records(wallet_address) ON DELETE CASCADE,
+  type           TEXT        NOT NULL,  -- 'swap' | 'analytics' | 'first_connect' | 'first_swap'
+  base_points    INTEGER     NOT NULL,
+  multiplier     NUMERIC     NOT NULL,
+  earned         INTEGER     NOT NULL,
+  meta           TEXT,                  -- txHash for swap events
+  ts             BIGINT      NOT NULL,  -- Unix milliseconds
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Performance indexes
+CREATE INDEX idx_points_events_wallet_ts
+  ON public.points_events (wallet_address, ts DESC);
+
+CREATE INDEX idx_points_records_referred_by
+  ON public.points_records (referred_by);
+
+-- Row-level security (open access — wallet address is the identifier)
+ALTER TABLE public.points_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.points_events  ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "public_all" ON public.points_records
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "public_all" ON public.points_events
+  FOR ALL USING (true) WITH CHECK (true);
 ```
-STON.fi v1  ·  STON.fi v2  ·  DeDust  ·  TONCO
+
+### Schema design notes
+
+- `referral_count` is a denormalised cache; the live count is always recomputed on load from `COUNT(*) WHERE referred_by = code`
+- `seen_swap_tx_ids` caps at 500 entries (oldest are trimmed) to bound row size
+- `points_events` is append-only; events are inserted via upsert with `onConflict: 'id'` to prevent duplicates
+- Schema version field enables future migrations (mismatch resets the record)
+
+---
+
+## Environment Variables
+
+```env
+# TonConnect manifest (required)
+NEXT_PUBLIC_PRIVY_APP_ID=...
+
+# TON RPC
+NEXT_PUBLIC_TONCENTER_API_URL=https://toncenter.com/api/v2/jsonRPC
+NEXT_PUBLIC_TONCENTER_API_KEY=...
+
+# Omniston WebSocket
+NEXT_PUBLIC_OMNISTON_WS=wss://omni-ws.ston.fi
+
+# Referral fee config
+NEXT_PUBLIC_REFERRER_ADDRESS=...
+NEXT_PUBLIC_REFERRER_FEE_BPS=10
+
+# Supabase (required for points persistence)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 
 ---
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- A TON wallet (e.g. [Tonkeeper](https://tonkeeper.com))
-
-### Install
-
 ```bash
-git clone https://github.com/your-username/omniswap.git
-cd omniswap
+# Install dependencies
 npm install
-```
 
-### Configure
-
-```bash
-cp .env.example .env.local
-```
-
-Edit `.env.local` (see [Environment Variables](#environment-variables) below).
-
-### Run
-
-```bash
+# Start dev server
 npm run dev
-```
 
-Open [http://localhost:3000](http://localhost:3000).
+# Type check
+npx tsc --noEmit
 
-### Build
-
-```bash
+# Production build
 npm run build
-npm start
 ```
+
+> **Before running:** Create the Supabase tables using the SQL in [Database Setup](#database-setup-supabase) and add the env vars above to `.env.local`.
 
 ---
 
-## Environment Variables
+## Security Notes
 
-| Variable | Required | Description |
+### What is protected
+
+| Concern | How |
+|---|---|
+| Duplicate swap awards | txHash stored in `seen_swap_tx_ids`; checked before every award |
+| Analytics farming | `lastAnalyticsAward` Unix timestamp; 24-hour server-enforced gap |
+| First-connect/swap replays | Boolean flags written once and never reset |
+| Self-referral | Referral code compared against the connecting wallet's own derived code |
+| Race condition on first-connect | Bonus applied inside the wallet-load `useEffect` before `setRecord`, not from a child effect |
+
+### Known limitations
+
+| Limitation | Impact | Mitigation path |
 |---|---|---|
-| `NEXT_PUBLIC_OMNISTON_WS` | No | Omniston WebSocket URL (default: `wss://omni-ws.ston.fi`) |
-| `NEXT_PUBLIC_REFERRER_ADDRESS` | No | Your TON address to receive referrer fees |
-| `NEXT_PUBLIC_REFERRER_FEE_BPS` | No | Referrer fee in basis points (default: `10` = 0.1%) |
-| `NEXT_PUBLIC_TONCENTER_API_URL` | No | TonCenter RPC endpoint (improves rate limits) |
-| `NEXT_PUBLIC_TONCENTER_API_KEY` | No | TonCenter API key |
-
-> No API keys are required to run locally — the Omniston WebSocket is public.
+| Open Supabase RLS | A user who knows their wallet address and the table schema can call the Supabase API directly to inflate points | Add API route layer + wallet signature verification (sign a nonce with TonConnect, verify on server) |
+| Client-computed USD value | Swap points depend on `tonUSDPrice` fetched from CoinGecko — could be stale or zero if the API fails | Use a dedicated price oracle or compute USD value from on-chain data post-trade |
+| No wallet ownership proof | Points are attributed to the address in `wallet.account.address` from TonConnect; ownership is asserted by the SDK | Require a wallet signature before writing any points (adds one extra UX step) |
+| `seenSwapTxIds` history cap | After 500 swaps, dedup protection for the oldest transactions expires | For high-volume users, move swap dedup to the `points_events` table (unique constraint on `meta` + `type = 'swap'`) |
 
 ---
 
-## Deployment
+## License
 
-The app is deployed on **Vercel** at [omniswap-three.vercel.app](https://omniswap-three.vercel.app).
-
-**Deploy your own:**
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/omniswap)
-
-Or manually:
-
-```bash
-npm i -g vercel
-vercel --prod
-```
-
-The `tonconnect-manifest.json` in `/public` must point to your deployed URL so TonConnect wallets can verify the app identity.
-
----
-
-## How Omniston Works
-
-```
-Without Omniston           With Omniston
-─────────────────          ───────────────────────────
-                           ┌─────────────────────┐
-100 TON ──► STON.fi ──►   │   Omniston Solver   │
-            (high impact)  │                     │
-                           │  60 TON ──► STON.fi │
-                           │  40 TON ──► DeDust  │
-                           └────────┬────────────┘
-                                    │
-You receive less USDT          You receive more USDT
-                                    ▲ ~0.3% average saving
-```
-
-By splitting across multiple pools, each pool experiences **less price impact**, and the blended exchange rate is better than any single pool could offer. The larger the trade, the more significant the saving.
-
----
-
-<div align="center">
-
-Built with ♥ on the TON blockchain · Powered by [Omniston](https://omniston.ston.fi)
-
-</div>
+MIT

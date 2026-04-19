@@ -12,6 +12,8 @@
     "@heroicons/react": "^2.2.0",
     "@ston-fi/omniston-sdk": "^0.7.9",
     "@ston-fi/omniston-sdk-react": "^0.7.12",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.103.3",
     "@tonconnect/sdk": "^3.4.1",
     "@tonconnect/ui-react": "^2.4.4",
     "autoprefixer": "^10.5.0",
