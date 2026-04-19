@@ -9,7 +9,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'cache.tonapi.io' },
       { protocol: 'https', hostname: 'static.ston.fi' },
     ],
+    domains: ['s2.coinmarketcap.com'],
   },
+
 };
 
 export default nextConfig;

@@ -392,7 +392,7 @@ function HowItWorks() {
 
   return (
     <div>
-      <h2 className="fw-bold text-xl tracking-tight mb-4" style={{ color: 'var(--text)' }}>
+      <h2 className="fw-bold text-xl tracking-tight mb-4" style={{ color: 'var(--accent-green)' }}>
         Why Omniston saves you money
       </h2>
       <div className="row g-3">
@@ -426,7 +426,7 @@ function HowItWorks() {
 function TopPairs() {
   return (
     <div>
-      <h2 className="fw-bold text-xl tracking-tight mb-4" style={{ color: 'var(--text)' }}>
+      <h2 className="fw-bold text-xl tracking-tight mb-4" style={{ color: 'var(--accent-green)' }}>
         Top Pairs by Savings
       </h2>
       <div className="overflow-hidden"
@@ -577,7 +577,7 @@ function StakingReturns() {
     <div>
       <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
         <div>
-          <h2 className="fw-bold text-xl tracking-tight mb-1" style={{ color: 'var(--text)' }}>
+          <h2 className="fw-bold text-xl tracking-tight mb-1" style={{ color: 'var(--accent-green)' }}>
             Tonstakers Staking Returns
           </h2>
           <p className="text-xs mb-0" style={{ color: 'var(--text-muted)' }}>

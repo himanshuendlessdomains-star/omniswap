@@ -7,7 +7,7 @@ export const TON_TOKENS: Token[] = [
     symbol: 'TON',
     name: 'Toncoin',
     decimals: 9,
-    logoUrl: 'https://ton.org/download/ton_symbol.svg',
+    logoUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/11419.png',
   },
   {
     address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs',
@@ -28,7 +28,7 @@ export const TON_TOKENS: Token[] = [
     symbol: 'STON',
     name: 'STON',
     decimals: 9,
-    logoUrl: 'https://static.ston.fi/logo/ston_logo.png',
+    logoUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/27311.png',
   },
   {
     address: 'EQDQoc5M3Bh8eWFephi9bClhevelbZZvWhkqdo80XuY_0qB3',
@@ -49,7 +49,7 @@ export const TON_TOKENS: Token[] = [
     symbol: 'pTON',
     name: 'Proxy TON',
     decimals: 9,
-    logoUrl: 'https://ton.org/download/ton_symbol.svg',
+    logoUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/11419.png',
   },
 ];
 
