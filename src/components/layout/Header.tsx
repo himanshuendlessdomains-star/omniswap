@@ -58,7 +58,7 @@ export default function Header() {
 
         {/* Nav */}
         <nav className="d-none d-md-flex align-items-center gap-1">
-          {([['/', 'Swap'], ['/analytics', 'Analytics']] as const).map(([href, label]) => {
+          {([['/', 'Swap'], ['/analytics', 'Analytics'], ['/staking', 'Staking']] as const).map(([href, label]) => {
             const active = pathname === href;
             return (
               <Link

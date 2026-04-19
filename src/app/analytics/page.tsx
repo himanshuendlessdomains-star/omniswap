@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTonConnectUI } from '@tonconnect/ui-react';
 import { NATIVE_TON, TON_TOKENS, parseUnits, formatUnits } from '@/lib/tokens';
 import { requestQuote, normalizeQuote } from '@/lib/omniston';
+import { fromNano, calcReturn } from '@/lib/tonstakers';
 import type { BestQuote, Token } from '@/types';
 
 // ─── Aggregate platform stats (Omniston public metrics) ───────────────────────
@@ -86,6 +88,9 @@ export default function AnalyticsPage() {
 
         {/* Top pairs */}
         <TopPairs />
+
+        {/* Staking returns */}
+        <StakingReturns />
       </div>
     </div>
   );
@@ -510,4 +515,163 @@ function deriveSavings(quote: BestQuote, tokenIn: Token, _tokenOut: Token, amoun
   const savedPct       = (savedTokens / singleDexOut) * 100;
 
   return { optimalOut, singleDexOut, savedTokens, savedPct, protocols };
+}
+
+// ─── Staking returns ──────────────────────────────────────────────────────────
+function StakingReturns() {
+  const [tonConnectUI] = useTonConnectUI();
+  const [amount, setAmount] = useState('1000');
+  const [apy, setApy] = useState<number | null>(null);
+  const [tvl, setTvl] = useState<number | null>(null);
+  const [stakers, setStakers] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!tonConnectUI) return;
+    let mounted = true;
+
+    import('tonstakers-sdk').then(({ Tonstakers }) => {
+      if (!mounted) return;
+      const ts = new Tonstakers({ connector: tonConnectUI as any });
+
+      Promise.all([
+        ts.getCurrentApy().catch(() => null),
+        ts.getTvl().catch(() => null),
+        ts.getStakersCount().catch(() => null),
+      ]).then(([a, t, s]) => {
+        if (!mounted) return;
+        setApy(a);
+        setTvl(t);
+        setStakers(s);
+        setLoading(false);
+      }).catch(() => { if (mounted) setLoading(false); });
+    }).catch(() => { if (mounted) setLoading(false); });
+
+    return () => { mounted = false; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const amountNum = parseFloat(amount) || 0;
+  const PERIODS = [
+    { label: '1 month',  days: 30 },
+    { label: '3 months', days: 90 },
+    { label: '1 year',   days: 365 },
+  ];
+
+  return (
+    <div>
+      <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+        <div>
+          <h2 className="fw-bold text-xl tracking-tight mb-1" style={{ color: 'var(--text)' }}>
+            Tonstakers Staking Returns
+          </h2>
+          <p className="text-xs mb-0" style={{ color: 'var(--text-muted)' }}>
+            Live APY from the Tonstakers liquid staking pool on TON
+          </p>
+        </div>
+        <Link href="/staking"
+          className="d-inline-flex align-items-center gap-2 text-sm fw-medium text-decoration-none"
+          style={{ color: 'var(--accent-lime)', background: 'var(--accent-lime-dim)', border: '1px solid rgba(200,241,53,0.25)', borderRadius: '999px', padding: '0.375rem 0.875rem' }}>
+          Stake now →
+        </Link>
+      </div>
+
+      {/* Stats row */}
+      <div className="row g-3 mb-4">
+        {[
+          {
+            label: 'Current APY',
+            value: loading ? null : (apy !== null ? `${apy.toFixed(2)}%` : 'N/A'),
+            accent: 'var(--accent-lime)',
+          },
+          {
+            label: 'Total Value Locked',
+            value: loading ? null : (tvl !== null
+              ? fromNano(tvl) >= 1_000_000
+                ? `${(fromNano(tvl) / 1_000_000).toFixed(1)}M TON`
+                : `${(fromNano(tvl) / 1_000).toFixed(0)}K TON`
+              : 'N/A'),
+            accent: 'var(--text)',
+          },
+          {
+            label: 'Active Stakers',
+            value: loading ? null : (stakers !== null ? stakers.toLocaleString('en-US') : 'N/A'),
+            accent: 'var(--text)',
+          },
+        ].map(s => (
+          <div key={s.label} className="col-12 col-md-4">
+            <div className="p-3"
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--border-2)', borderRadius: '16px' }}>
+              {s.value === null ? (
+                <span className="icon-sm rounded-circle animate-spin d-inline-block mb-1"
+                  style={{ border: '2px solid var(--border-2)', borderTopColor: 'var(--text-dim)', width: '18px', height: '18px' }} />
+              ) : (
+                <div className="fw-bold text-2xl mb-1" style={{ color: s.accent }}>{s.value}</div>
+              )}
+              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Returns calculator */}
+      <div className="p-4"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-2)', borderRadius: '24px' }}>
+        <div className="row g-4 align-items-start">
+          <div className="col-12 col-md-5">
+            <h3 className="fw-semibold text-sm mb-3" style={{ color: 'var(--text)' }}>Returns Calculator</h3>
+            <div className="d-flex align-items-center gap-3 p-3 mb-3"
+              style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: '14px' }}>
+              <span className="text-sm flex-shrink-0" style={{ color: 'var(--text-muted)' }}>Stake</span>
+              <input
+                type="number"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder="1000"
+                className="flex-grow-1 fw-semibold outline-none text-end"
+                style={{ fontSize: '1.125rem', background: 'transparent', border: 'none', color: 'var(--text)' }}
+              />
+              <span className="text-sm fw-medium flex-shrink-0" style={{ color: 'var(--text-muted)' }}>TON</span>
+            </div>
+            <p className="text-xs mb-0" style={{ color: 'var(--text-dim)', lineHeight: 1.6 }}>
+              tsTON is liquid — you can trade it while earning staking rewards.
+              No lockup period with instant unstaking.
+            </p>
+          </div>
+          <div className="col-12 col-md-7">
+            <div className="overflow-hidden"
+              style={{ border: '1px solid var(--border)', borderRadius: '14px' }}>
+              <div className="d-flex px-3 py-2 border-bottom"
+                style={{ background: 'var(--bg-card-2)', borderColor: 'var(--border)' }}>
+                {['Period', 'Earnings (TON)', 'Total Value'].map(h => (
+                  <div key={h} className="flex-grow-1 text-xs fw-medium"
+                    style={{ color: 'var(--text-dim)', fontFamily: 'monospace', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    {h}
+                  </div>
+                ))}
+              </div>
+              {PERIODS.map((p, i) => {
+                const earnings = apy && amountNum > 0 ? calcReturn(amountNum, apy, p.days) : null;
+                return (
+                  <div key={p.label}
+                    className={`d-flex align-items-center px-3 py-3${i < PERIODS.length - 1 ? ' border-bottom' : ''}`}
+                    style={{ borderColor: 'var(--border)' }}>
+                    <div className="flex-grow-1 text-sm" style={{ color: 'var(--text-muted)' }}>{p.label}</div>
+                    <div className="flex-grow-1">
+                      <span className="px-2 py-1 rounded-pill text-xs fw-semibold"
+                        style={{ background: 'var(--accent-lime-dim)', color: 'var(--accent-lime)', border: '1px solid rgba(200,241,53,0.2)' }}>
+                        {earnings !== null ? `+${earnings.toFixed(4)}` : loading ? '…' : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex-grow-1 text-sm fw-medium" style={{ color: 'var(--text)' }}>
+                      {earnings !== null ? (amountNum + earnings).toFixed(4) : '—'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
