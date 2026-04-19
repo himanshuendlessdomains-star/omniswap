@@ -155,10 +155,12 @@ export default function SwapCard() {
         outgoingTxHash: outHash,
       }).subscribe({
         next: (status: any) => {
-          const s = status?.status ?? status?.trade_status;
-          if (s === 'swapping') setPhase('swapping');
-          else if (s === 'receiving_funds') setPhase('receiving_funds');
-          else if (s === 'trade_settled') {
+          // SDK returns a protobuf object: status.status is TradeStatus_StatusOneOf
+          // with optional fields (swapping, receivingFunds, tradeSettled), not a string.
+          const s = status?.status;
+          if (s?.swapping)        setPhase('swapping');
+          else if (s?.receivingFunds) setPhase('receiving_funds');
+          else if (s?.tradeSettled) {
             setPhase('trade_settled');
             setSwapping(false);
             trackSub?.unsubscribe?.();
