@@ -120,8 +120,8 @@ export default function AnalyticsPage() {
 // ─── Live savings calculator ──────────────────────────────────────────────────
 
 function SavingsCalculator() {
-  const [tokenIn]  = useState<Token>(DEFAULT_IN);
-  const [tokenOut] = useState<Token>(DEFAULT_OUT);
+  const tokenIn  = DEFAULT_IN;
+  const tokenOut = DEFAULT_OUT;
   const [amount, setAmount] = useState('10');
   const [quote, setQuote]   = useState<BestQuote | null>(null);
   const [loading, setLoading] = useState(false);

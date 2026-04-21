@@ -6,7 +6,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePoints } from '@/contexts/PointsContext';
 import {
-  POINTS_CONFIG, PointEvent,
+  POINTS_CONFIG, PointEvent, PointsRecord,
   fmtPoints, getPointsRank, pointsToNextRank, calcMultiplier,
 } from '@/lib/points';
 
@@ -116,7 +116,7 @@ function NoWalletState() {
 
 // ─── Overview cards ───────────────────────────────────────────────────────────
 
-function OverviewCards({ record, multiplier }: { record: NonNullable<ReturnType<typeof usePoints>['record']>; multiplier: number }) {
+function OverviewCards({ record, multiplier }: { record: PointsRecord; multiplier: number }) {
   const rank      = getPointsRank(record.totalPoints);
   const meta      = RANK_META[rank];
   const toNext    = pointsToNextRank(record.totalPoints);
@@ -181,7 +181,7 @@ function OverviewCards({ record, multiplier }: { record: NonNullable<ReturnType<
 
 // ─── How to earn ──────────────────────────────────────────────────────────────
 
-function HowToEarn({ record }: { record: NonNullable<ReturnType<typeof usePoints>['record']> }) {
+function HowToEarn({ record }: { record: PointsRecord }) {
   const tasks = [
     {
       label:   'Connect wallet (one-time)',
@@ -284,7 +284,7 @@ function ReferralCard({
   referralLink: string;
   copied: boolean;
   onCopy: () => void;
-  record: NonNullable<ReturnType<typeof usePoints>['record']>;
+  record: PointsRecord;
 }) {
   return (
     <div className="p-4 d-flex flex-column gap-3"
@@ -333,7 +333,7 @@ function ReferralCard({
 
 // ─── Boost breakdown ──────────────────────────────────────────────────────────
 
-function BoostBreakdown({ record, multiplier }: { record: NonNullable<ReturnType<typeof usePoints>['record']>; multiplier: number }) {
+function BoostBreakdown({ record, multiplier }: { record: PointsRecord; multiplier: number }) {
   const rows = [
     { label: 'Base',          value: '1×',                              color: 'var(--text)' },
     { label: 'Staking boost', value: `+${record.boosts.staking}×`,     color: 'var(--accent-lime)' },
