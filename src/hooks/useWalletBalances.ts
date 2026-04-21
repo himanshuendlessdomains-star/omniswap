@@ -11,13 +11,6 @@ export function useWalletBalances() {
   const [balances, setBalances] = useState<WalletBalances>({});
   const [loading, setLoading] = useState(false);
 
-  const load = useCallback(async (address: string) => {
-    setLoading(true);
-    const result = await fetchAllBalances(address).catch(() => ({}));
-    setBalances(result);
-    setLoading(false);
-  }, []);
-
   useEffect(() => {
     if (!wallet?.account.address) { setBalances({}); return; }
     let cancelled = false;
@@ -29,8 +22,12 @@ export function useWalletBalances() {
   }, [wallet?.account.address]);
 
   const refresh = useCallback(() => {
-    if (wallet?.account.address) load(wallet.account.address);
-  }, [wallet?.account.address, load]);
+    if (!wallet?.account.address) return;
+    setLoading(true);
+    fetchAllBalances(wallet.account.address)
+      .then(result => { setBalances(result); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [wallet?.account.address]);
 
   return { balances, loading, refresh };
 }

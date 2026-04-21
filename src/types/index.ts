@@ -7,17 +7,6 @@ export interface Token {
   balance?: string;
 }
 
-export type SwapDirection = 'exactIn' | 'exactOut';
-
-export interface SwapState {
-  tokenIn: Token | null;
-  tokenOut: Token | null;
-  amountIn: string;
-  amountOut: string;
-  direction: SwapDirection;
-  slippageBps: number;
-}
-
 export interface RouteChunk {
   protocol: string;
   bidAmount: string;

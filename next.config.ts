@@ -8,8 +8,8 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'assets.coingecko.com' },
       { protocol: 'https', hostname: 'cache.tonapi.io' },
       { protocol: 'https', hostname: 'static.ston.fi' },
+      { protocol: 'https', hostname: 's2.coinmarketcap.com' },
     ],
-    domains: ['s2.coinmarketcap.com'],
   },
 
 };
